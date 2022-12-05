@@ -8,6 +8,7 @@ import multiprocessing as mp
 from collections import defaultdict
 from typing import Dict, Tuple
 import time
+from operator import itemgetter
 
 from queryreduce.models.config import MarkovConfig
 from queryreduce.utils.utils import time_output, to_device, weight
@@ -58,6 +59,7 @@ class Process:
         self.index = self._load_index(config.store) 
         self.n = config.n
         self.state_idx = np.zeros(config.batch, dtype=np.int64)
+        self.cache = defaultdict(lambda x : np.zeros(config.n, dtype=np.int64))
         if self.ngpu > 0:
             logging.info('Using GPU, capping neighbours at 2048')
             self.n = min(2048, self.n)
@@ -95,10 +97,32 @@ class Process:
         for i in range(1, self.batch):
             self.state_idx[i] = np.random.choice(self._expand_distance(self.triples[self.state_idx[i-1]]))
         self.state_idx = self.state_idx.astype(np.int64)
+
+    def _retrieve(self, x : np.array) -> np.array:
+        return np.stack([self.cache.get(id) for id in x])
         
     def _step(self) -> np.array:
-        self.state_idx = np.apply_along_axis(np.random.choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
+        vec_in = np.vectorize(lambda x : x in self.cache)
+        filter = vec_in(self.state_idx)
 
+        if len(filter != 0) and len(filter != self.batch):
+            tmp_array = np.zeros((self.batch, self.n), dtype=np.int64)
+            cached = self.state_idx[filter]
+            compute = self.state_idx[np.logical_not(filter)]
+
+            tmp_array[filter] = self._retrieve(cached)
+            computed = np.reshape(self._distance(self.triples[compute]), (len(compute), self.n))
+            tmp_array[np.logical_not(filter)] = computed
+            for key, value in zip(compute, computed):
+                self.cache[key] = value
+
+            self.state_idx = np.apply_along_axis(np.random.choice, 1, tmp_array)
+        elif len(filter==self.batch):
+            self.state_idx = np.apply_along_axis(np.random.choice, 1, self._retrieve(self.state_idx))
+        else:
+            self.state_idx = np.apply_along_axis(np.random.choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
+
+        #self.state_idx = np.apply_along_axis(np.random.choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
         return self.state_idx
     
     def run(self, x0 : int, k : int) -> Tuple[np.array, int]:
