@@ -104,7 +104,9 @@ class Process:
         self.state_idx = self.state_idx.astype(np.int64)
 
     def _retrieve(self, x : np.array) -> np.array:
-        return np.stack([self.cache.get(id) for id in x])
+        result = np.stack([self.cache.get(id) for id in x])
+        logging.debug(f'retrieved array of shape: {result.shape}')
+        return 
         
     def _step(self) -> np.array:
         vec_in = np.vectorize(lambda x : x in self.cache)
@@ -114,7 +116,8 @@ class Process:
             tmp_array = np.zeros((self.batch, self.n), dtype=np.int64)
             cached = self.state_idx[filter]
             compute = self.state_idx[np.logical_not(filter)]
-
+            logging.debug(f'shape cached: {cached.shape}')
+            logging.debug(f'shape compute: {compute.shape}')
             tmp_array[filter] = self._retrieve(cached)
             computed = np.reshape(self._distance(self.triples[compute]), (len(compute), self.n))
             tmp_array[np.logical_not(filter)] = computed
