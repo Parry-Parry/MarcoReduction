@@ -89,7 +89,8 @@ class Process:
         self.state_idx[1] = int(np.random.choice(self._expand_distance(self.triples[self.state_idx[0]])))
         for i in range(2, self.batch):
             vec = np.mean([self._expand(self.triples[self.state_idx[i-1]]), self._expand(self.triples[self.state_idx[i-2]])], axis=0)
-            candidates = np.random.choice(self._distance(vec))
+            candidates = self._distance(vec)
+            logging.info(f'shape of candidate {candidates.shape}')
             self.cache[self.state_idx[i-1]] = candidates
             self.state_idx[i] = np.random.choice(candidates)
 
