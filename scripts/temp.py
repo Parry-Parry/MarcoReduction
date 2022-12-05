@@ -117,9 +117,7 @@ class Process:
 
     def _step(self) -> np.array:
         vec_in = np.vectorize(lambda x : x in self.cache)
-        print(self.state_idx)
         filter = vec_in(self.state_idx)
-        print(filter)
 
         if np.any(filter==False) and np.any(filter==True):
             tmp_array = np.zeros((self.batch, self.n), dtype=np.int64)
