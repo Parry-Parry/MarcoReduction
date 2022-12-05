@@ -99,12 +99,13 @@ class Process:
         self.state_idx[0] = id
         for i in range(1, self.batch):
             candidates = self._expand_distance(self.triples[self.state_idx[i-1]])
+            logging.info(f'shape of candidate {candidates}')
             self.cache[self.state_idx[i-1]] = candidates
             self.state_idx[i] = np.random.choice(candidates)
         self.state_idx = self.state_idx.astype(np.int64)
 
     def _retrieve(self, x : np.array) -> np.array:
-        result = np.stack([self.cache.get(id) for id in x])
+        result = np.stack([self.cache[id] for id in x])
         logging.info(f'retrieved array of shape: {result.shape}')
         return result
         
