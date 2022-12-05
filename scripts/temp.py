@@ -106,7 +106,15 @@ class Process:
     def _retrieve(self, x : np.array) -> np.array:
         result = np.stack([self.cache[id] for id in x])
         return result
-        
+    
+    def _choice(self, x):
+        vec_in = np.vectorize(lambda x : x in self.cache)
+        filter = np.logical_not(vec_in(x))
+        if len(filter) > 0:
+            return np.random.choice(x[filter])
+        else:
+            return np.random.choice(x)
+
     def _step(self) -> np.array:
         vec_in = np.vectorize(lambda x : x in self.cache)
         filter = vec_in(self.state_idx)
@@ -121,11 +129,11 @@ class Process:
             for key, value in zip(compute, computed):
                 self.cache[key] = value
 
-            self.state_idx = np.apply_along_axis(np.random.choice, 1, tmp_array)
+            self.state_idx = np.apply_along_axis(self._choice, 1, tmp_array)
         elif len(filter==self.batch):
-            self.state_idx = np.apply_along_axis(np.random.choice, 1, self._retrieve(self.state_idx))
+            self.state_idx = np.apply_along_axis(self._choice, 1, self._retrieve(self.state_idx))
         else:
-            self.state_idx = np.apply_along_axis(np.random.choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
+            self.state_idx = np.apply_along_axis(self._choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
             
         return self.state_idx
     
