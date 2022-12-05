@@ -122,16 +122,20 @@ class Process:
         if len(filter != 0) and len(filter != self.batch):
             tmp_array = np.zeros((self.batch, self.n), dtype=np.int64)
             cached = self.state_idx[filter]
+            print(len(cached))
             compute = self.state_idx[np.logical_not(filter)]
             tmp_array[filter] = self._retrieve(cached)
             computed = np.reshape(self._distance(self.triples[compute]), (len(compute), self.n))
             tmp_array[np.logical_not(filter)] = computed
+
             for key, value in zip(compute, computed):
                 self.cache[key] = value
 
             self.state_idx = np.apply_along_axis(self._choice, 1, tmp_array)
+
         elif len(filter==self.batch):
             self.state_idx = np.apply_along_axis(self._choice, 1, self._retrieve(self.state_idx))
+
         else:
             self.state_idx = np.apply_along_axis(self._choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
             
