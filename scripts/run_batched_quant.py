@@ -4,9 +4,6 @@ import logging
 import bz2
 import pickle
 import faiss
-import time 
-from typing import Dict, Tuple, Any, NamedTuple
-from collections import defaultdict
 import multiprocessing as mp
 
 from queryreduce.models.config import MarkovConfig
