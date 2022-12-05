@@ -110,7 +110,7 @@ class Process:
     def _choice(self, x):
         vec_in = np.vectorize(lambda x : x in self.cache)
         filter = np.logical_not(vec_in(x))
-        if len(filter) > 0:
+        if np.any(filter==True):
             return np.random.choice(x[filter])
         else:
             return np.random.choice(x)
@@ -129,7 +129,7 @@ class Process:
 
             for key, value in zip(compute, computed):
                 self.cache[key] = value
-
+                
             self.state_idx = np.apply_along_axis(self._choice, 1, tmp_array)
 
         elif np.all(filter==True):
