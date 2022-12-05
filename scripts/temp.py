@@ -117,12 +117,13 @@ class Process:
 
     def _step(self) -> np.array:
         vec_in = np.vectorize(lambda x : x in self.cache)
+        print(self.state_idx)
         filter = vec_in(self.state_idx)
+        print(filter)
 
         if len(filter != 0) and len(filter != self.batch):
             tmp_array = np.zeros((self.batch, self.n), dtype=np.int64)
             cached = self.state_idx[filter]
-            print(len(cached))
             compute = self.state_idx[np.logical_not(filter)]
             tmp_array[filter] = self._retrieve(cached)
             computed = np.reshape(self._distance(self.triples[compute]), (len(compute), self.n))
