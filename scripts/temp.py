@@ -90,7 +90,6 @@ class Process:
         for i in range(2, self.batch):
             vec = np.mean([self._expand(self.triples[self.state_idx[i-1]]), self._expand(self.triples[self.state_idx[i-2]])], axis=0)
             candidates = self._distance(vec)
-            logging.info(f'shape of candidate {candidates.shape}')
             self.cache[self.state_idx[i-1]] = candidates
             self.state_idx[i] = np.random.choice(candidates)
 
@@ -100,14 +99,12 @@ class Process:
         self.state_idx[0] = id
         for i in range(1, self.batch):
             candidates = self._expand_distance(self.triples[self.state_idx[i-1]])
-            logging.info(f'shape of candidate {candidates}')
             self.cache[self.state_idx[i-1]] = candidates
             self.state_idx[i] = np.random.choice(candidates)
         self.state_idx = self.state_idx.astype(np.int64)
 
     def _retrieve(self, x : np.array) -> np.array:
         result = np.stack([self.cache[id] for id in x])
-        logging.info(f'retrieved array of shape: {result.shape}')
         return result
         
     def _step(self) -> np.array:
@@ -118,8 +115,6 @@ class Process:
             tmp_array = np.zeros((self.batch, self.n), dtype=np.int64)
             cached = self.state_idx[filter]
             compute = self.state_idx[np.logical_not(filter)]
-            logging.info(f'shape cached: {cached.shape}')
-            logging.info(f'shape compute: {compute.shape}')
             tmp_array[filter] = self._retrieve(cached)
             computed = np.reshape(self._distance(self.triples[compute]), (len(compute), self.n))
             tmp_array[np.logical_not(filter)] = computed
@@ -131,8 +126,7 @@ class Process:
             self.state_idx = np.apply_along_axis(np.random.choice, 1, self._retrieve(self.state_idx))
         else:
             self.state_idx = np.apply_along_axis(np.random.choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
-
-        #self.state_idx = np.apply_along_axis(np.random.choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
+            
         return self.state_idx
     
     def run(self, x0 : int, k : int) -> Tuple[np.array, int]:
