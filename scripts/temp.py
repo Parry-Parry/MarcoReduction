@@ -121,7 +121,7 @@ class Process:
         filter = vec_in(self.state_idx)
         print(filter)
 
-        if len(filter != 0) and len(filter != self.batch):
+        if np.any(filter==False) and np.any(filter==True):
             tmp_array = np.zeros((self.batch, self.n), dtype=np.int64)
             cached = self.state_idx[filter]
             compute = self.state_idx[np.logical_not(filter)]
@@ -134,7 +134,7 @@ class Process:
 
             self.state_idx = np.apply_along_axis(self._choice, 1, tmp_array)
 
-        elif len(filter==self.batch):
+        elif np.all(filter==True):
             self.state_idx = np.apply_along_axis(self._choice, 1, self._retrieve(self.state_idx))
 
         else:
