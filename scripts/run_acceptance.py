@@ -154,7 +154,7 @@ def main(args):
         alpha=args.alpha,
         update=args.update,
         compare=args.compare,
-        ngpus = args.ngpu
+        gpus = args.ngpu
     )
 
     model = Sampler(config)
