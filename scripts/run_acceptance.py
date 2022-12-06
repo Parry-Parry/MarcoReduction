@@ -118,7 +118,7 @@ class Sampler:
         while len(self.idx) < k:
             x_cand = np.random.choice(self.id)
             np.delete(self.id, x_cand)
-            threshold = self._threshold(self.states[x_cand])
+            threshold = self._threshold(np.expand_dims(self.states[x_cand], axis=0))
             logging.debug(f'Threshold value {threshold}')
             if threshold > self.alpha:
                 ticker += 1
