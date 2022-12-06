@@ -6,7 +6,6 @@ from typing import NamedTuple, Any
 import faiss 
 import numpy as np
 import logging 
-from functools import partial
 import multiprocessing as mp
 
 from queryreduce.utils.utils import time_output
@@ -53,14 +52,9 @@ class Sampler:
             'max' : self._compare_max,
             'mean' : self._compare_mean
         }
-        distance = {
-            'L2' : faiss.METRIC_L2,
-            'IP' : faiss.METRIC_INNER_PRODUCT
-        }
 
         self.states = config.states
         if config.metric == 'IP' : faiss.normalize_L2(self.states)
-        self.metric = distance[config.metric]
         self.id = np.arange(len(config.states), dtype=np.int64)
         self.sub = config.sub
         self.alpha = config.alpha
@@ -69,18 +63,6 @@ class Sampler:
         self.idx = []
         self.centroid = np.zeros((1, config.states.shape[-1]), dtype=np.int64)
         self.compare = compare[config.compare]
-        
-        if config.gpus:
-            logging.debug('Using GPU')
-            res = [faiss.StandardGpuResources() for _ in range(config.gpus)]
-            if config.gpus == 1: res = res[0]
-            self.distance = partial(faiss.pairwise_distances_gpu, res=res, metric=self.metric)
-        elif not config.gpus and config.metric == 'IP':
-            logging.error('Cannot use Inner Product on CPU Exiting...')
-            exit
-        else:
-            logging.debug('Using CPU')
-            self.distance = partial(faiss.pairwise_distances, mt=self.metric)
     
     def _compare_max(self, x, c) -> float:
         return np.max(x) / np.max(c)
