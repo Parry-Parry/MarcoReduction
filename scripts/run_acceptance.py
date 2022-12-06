@@ -121,14 +121,15 @@ class Sampler:
             threshold = self._threshold(self.states[x_cand])
             logging.debug(f'Threshold value {threshold}')
             if threshold > self.alpha:
+                ticker += 1
                 self.idx.add(x_cand)
                 if ticker % self.update == 0:
                     logging.debug(f'Updating Centroid at step {t}')
                     self.centroid = np.mean(self.states[self.idx])
-                ticker += 1
+                
             if t % 1000 == 0:
                 diff = time.time() - start
-                logging.info(f'Time Elapsed: {diff} | {len(self.idx)} candidates found')
+                logging.info(f'Time Elapsed over {t} steps: {diff} | {len(self.idx)} candidates found')
             t += 1
         end = time.time()
         logging.info(time_output(end - start))
