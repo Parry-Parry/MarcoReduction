@@ -71,9 +71,11 @@ class Sampler:
         self.compare = compare[config.compare]
 
         if config.gpus:
+            logging.debug('Using GPU')
             res = [faiss.StandardGpuResources() for _ in config.gpus]
             self.distance = partial(faiss.pairwise_distance_gpu, res=res)
         else:
+            logging.debug('Using CPU')
             self.distance = faiss.pairwise_distances
     
     def _compare_max(self, x, c) -> float:
@@ -90,10 +92,13 @@ class Sampler:
             * There are less candidates than the desired subset
         '''
         if len(self.idx) > self.sub:
+            logging.debug('More candidates than subset')
             indices = np.random.choice(self.idx, self.sub)
         elif len(self.idx) == 0:
+            logging.debug('No Candidates')
             return 1.
         else:
+            logging.debug('Less candidates than subset')
             indices = self.idx
         
         vecs = self.states[indices]
@@ -114,10 +119,12 @@ class Sampler:
             x_cand = np.random.choice(self.id)
             np.delete(self.id, x_cand)
             threshold = self._threshold(self.states[x_cand])
+            logging.debug(f'Threshold value {threshold}')
             if threshold > self.alpha:
                 ticker += 1
                 self.idx.add(x_cand)
                 if ticker % self.update == 0:
+                    logging.debug(f'Updating Centroid at step {t}')
                     self.centroid = np.mean(self.states[self.idx])
             if t % 1000 == 0:
                 diff = time.time() - start
@@ -141,6 +148,7 @@ parser.add_argument('-out', type=str, default='/')
 parser.add_argument('-ngpu', type=int, default=0)
 parser.add_argument('--start', type=int, default=None)
 parser.add_argument('--compress', action='store_true')
+parser.add_argument('--verbose', action='store_true')
 
 def main(args):
     if args.compress:
@@ -175,9 +183,12 @@ def main(args):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+    args = parser.parse_args()
+    if args.verbose: log_level = logging.DEBUG
+    else: log_level = logging.INFO
+    logging.basicConfig(format='%(asctime)s - %(message)s', level=log_level)
     logging.info('--Initialising Candidate Choice Using Markov Process--')
-    main(parser.parse_args())
+    main(args)
 
 
 
