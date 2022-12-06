@@ -69,7 +69,7 @@ class Sampler:
         self.idx = []
         self.centroid = np.zeros(config.states.shape[-1], dtype=np.int64)
         self.compare = compare[config.compare]
-
+        
         if config.gpus:
             logging.debug('Using GPU')
             res = [faiss.StandardGpuResources() for _ in range(config.gpus)]
