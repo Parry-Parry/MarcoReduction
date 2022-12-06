@@ -72,7 +72,8 @@ class Sampler:
 
         if config.gpus:
             logging.debug('Using GPU')
-            res = [faiss.StandardGpuResources() for _ in config.gpus]
+            res = [faiss.StandardGpuResources() for _ in range(config.gpus)]
+            if config.gpus == 1: res = res[0]
             self.distance = partial(faiss.pairwise_distance_gpu, res=res, metric=self.metric)
         elif not config.gpus and config.metric == 'IP':
             logging.error('Cannot use Inner Product on CPU Exiting...')
