@@ -49,6 +49,10 @@ class Process:
             'std' : self._get_batch,
             'mean' : self._get_mean_batch
         }
+        sampling = {
+            'std' : np.random.choice,
+            'constraint' : self._choice
+        }
 
         self.triples = weight(config.triples, config.dim, config.alpha, config.beta, config.equal)
         self.P : Dict[int, np.array, np.array] = defaultdict(lambda : np.zeros(config.n))
@@ -64,6 +68,7 @@ class Process:
             logging.info('Using GPU, capping neighbours at 2048')
             self.n = min(2048, self.n)
         self.get_batch = batching[config.batch_type]
+        self.choice = sampling[config.choice]
     
     def _load_index(self, store : str):
         assert store != ''
@@ -129,14 +134,12 @@ class Process:
 
             for key, value in zip(compute, computed):
                 self.cache[key] = value
-                
-            self.state_idx = np.apply_along_axis(self._choice, 1, tmp_array)
 
+            self.state_idx = np.apply_along_axis(self.choice, 1, tmp_array)
         elif np.all(filter==True):
-            self.state_idx = np.apply_along_axis(self._choice, 1, self._retrieve(self.state_idx))
-
+            self.state_idx = np.apply_along_axis(self.choice, 1, self._retrieve(self.state_idx))
         else:
-            self.state_idx = np.apply_along_axis(self._choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
+            self.state_idx = np.apply_along_axis(self.choice, 1, np.reshape(self._distance(self.triples[self.state_idx]), (self.batch, self.n)))
             
         return self.state_idx
     
@@ -173,6 +176,7 @@ parser.add_argument('-store', type=str)
 parser.add_argument('-samples', type=int, default=1)
 parser.add_argument('-batch', type=int, default=16)
 parser.add_argument('-type', type=str, default='std')
+parser.add_argument('-choice', type=str, default='std')
 parser.add_argument('-out', type=str, default='/')
 parser.add_argument('-nprobe', type=int, default=3)
 parser.add_argument('-ngpu', type=int, default=0)
@@ -196,6 +200,7 @@ def main(args):
         equal=True if args.eq else False,
         batch = args.batch,
         batch_type = args.type,
+        choice = args.choice,
         n = args.n,
         store = args.store,
         nprobe = args.nprobe, 
