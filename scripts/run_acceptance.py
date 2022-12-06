@@ -122,7 +122,7 @@ class Sampler:
             logging.debug(f'Threshold value {threshold}')
             if threshold > self.alpha:
                 ticker += 1
-                self.idx.add(x_cand)
+                self.idx.append(x_cand)
                 if ticker % self.update == 0:
                     logging.debug(f'Updating Centroid at step {t}')
                     self.centroid = np.mean(self.states[self.idx])
