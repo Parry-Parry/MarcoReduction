@@ -96,7 +96,7 @@ class Sampler:
             indices = np.random.choice(self.idx, self.sub)
         elif len(self.idx) == 0:
             logging.debug('No Candidates')
-            return 1.
+            return 10.
         else:
             logging.debug('Less candidates than subset')
             indices = self.idx
@@ -121,11 +121,11 @@ class Sampler:
             threshold = self._threshold(self.states[x_cand])
             logging.debug(f'Threshold value {threshold}')
             if threshold > self.alpha:
-                ticker += 1
                 self.idx.add(x_cand)
                 if ticker % self.update == 0:
                     logging.debug(f'Updating Centroid at step {t}')
                     self.centroid = np.mean(self.states[self.idx])
+                ticker += 1
             if t % 1000 == 0:
                 diff = time.time() - start
                 logging.info(f'Time Elapsed: {diff} | {len(self.idx)} candidates found')
