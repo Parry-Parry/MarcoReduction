@@ -119,6 +119,9 @@ class Sampler:
                 self.idx.add(x_cand)
                 if ticker % self.update == 0:
                     self.centroid = np.mean(self.states[self.idx])
+            if t % 1000 == 0:
+                diff = time.time() - start
+                logging.info(f'Time Elapsed: {diff} | {len(self.idx)} candidates found')
             t += 1
         end = time.time()
         logging.info(time_output(end - start))
