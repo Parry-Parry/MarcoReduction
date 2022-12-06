@@ -73,10 +73,10 @@ class Sampler:
         if config.gpus:
             logging.debug('Using GPU')
             res = [faiss.StandardGpuResources() for _ in config.gpus]
-            self.distance = partial(faiss.pairwise_distance_gpu, res=res)
+            self.distance = partial(faiss.pairwise_distance_gpu, res=res, metric=self.metric)
         else:
             logging.debug('Using CPU')
-            self.distance = faiss.pairwise_distances
+            self.distance = partial(faiss.pairwise_distances, mt=self.metric)
     
     def _compare_max(self, x, c) -> float:
         return np.max(x) / np.max(c)
@@ -102,8 +102,8 @@ class Sampler:
             indices = self.idx
         
         vecs = self.states[indices]
-        dist_x = self.distance(x, vecs, metric=self.metric)
-        dist_c = self.distance(self.centroid, vecs, metric=self.metric)
+        dist_x = self.distance(x, vecs)
+        dist_c = self.distance(self.centroid, vecs)
 
         return self.compare(dist_x, dist_c)
 
