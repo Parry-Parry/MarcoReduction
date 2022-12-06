@@ -51,7 +51,7 @@ class Sampler:
     def __init__(self, config : AcceptanceConfig) -> None:
         compare = {
             'max' : self._compare_max,
-            'min' : self._compare_mean
+            'mean' : self._compare_mean
         }
         distance = {
             'L2' : faiss.METRIC_L2,
