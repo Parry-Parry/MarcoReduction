@@ -58,7 +58,7 @@ class Sampler:
             'IP' : faiss.METRIC_INNER_PRODUCT
         }
 
-        self.states = config.states 
+        self.states = config.states
         if config.metric == 'IP' : faiss.normalize_L2(self.states)
         self.metric = distance[config.metric]
         self.id = np.arange(len(config.states), dtype=np.int64)
@@ -66,8 +66,8 @@ class Sampler:
         self.alpha = config.alpha
         self.update = config.update
 
-        self.idx = set()
-        self.centroid = np.zeros(config.states.shape[-1])
+        self.idx = []
+        self.centroid = np.zeros(config.states.shape[-1], dtype=np.int64)
         self.compare = compare[config.compare]
 
         if config.gpus:
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     if args.verbose: log_level = logging.DEBUG
     else: log_level = logging.INFO
     logging.basicConfig(format='%(asctime)s - %(message)s', level=log_level)
-    logging.info('--Initialising Candidate Choice Using Markov Process--')
+    logging.info('--Initialising Candidate Choice Using Acceptance Threshold Sampler--')
     main(args)
 
 
