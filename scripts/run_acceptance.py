@@ -97,7 +97,7 @@ class Sampler:
         '''
         if len(self.idx) > self.sub:
             logging.debug('More candidates than subset')
-            indices = np.random.sample(self.idx, self.sub)
+            indices = np.random.choice(self.idx, self.sub, replace=False)
         elif len(self.idx) == 0:
             logging.debug('No Candidates')
             return 10.
