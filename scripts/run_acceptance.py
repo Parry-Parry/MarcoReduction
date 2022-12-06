@@ -114,7 +114,7 @@ class Sampler:
     def run(self, x0, k) -> np.array:
         faiss.omp_set_num_threads(mp.cpu_count())
         x_init = self.states[x0]
-        self.centroid = x_init
+        self.centroid = np.expand_dims(x_init, axis=0)
         ticker = 0 # Update Ticker
         t = 0 # Total Steps
         logging.info(f'Retrieving {k} candidates with starting id: {x0}')
