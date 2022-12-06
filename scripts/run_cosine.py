@@ -48,27 +48,14 @@ k : int -> Desired number of samples
 
 class Sampler:
     def __init__(self, config : AcceptanceConfig) -> None:
-        compare = {
-            'max' : self._compare_max,
-            'mean' : self._compare_mean
-        }
-
         self.states = config.states
-        if config.metric == 'IP' : faiss.normalize_L2(self.states)
+        faiss.normalize_L2(self.states)
         self.id = np.arange(len(config.states), dtype=np.int64)
         self.sub = config.sub
         self.alpha = config.alpha
         self.update = config.update
 
         self.idx = []
-        self.centroid = np.zeros((1, config.states.shape[-1]), dtype=np.int64)
-        self.compare = compare[config.compare]
-    
-    def _compare_max(self, x, c) -> float:
-        return np.max(x) / np.max(c)
-
-    def _compare_mean(self, x, c) -> float:
-        return np.mean(x) / np.mean(c)
 
     def _threshold(self, x):
         '''
@@ -79,40 +66,27 @@ class Sampler:
         '''
         if len(self.idx) > self.sub:
             logging.debug('More candidates than subset')
-            indices = np.random.choice(self.idx, self.sub)
+            indices = np.random.sample(self.idx, self.sub)
         elif len(self.idx) == 0:
             logging.debug('No Candidates')
-            return 10.
+            return -1.
         else:
             logging.debug('Less candidates than subset')
             indices = self.idx
-        
-        vecs = self.states[indices]
-        dist_x = self.distance(x, vecs)
-        dist_c = self.distance(self.centroid, vecs)
+        centroid = np.mean(self.states[indices], axis=0)
+        return np.inner(x, centroid)
 
-        return self.compare(dist_x, dist_c)
-
-    def run(self, x0, k) -> np.array:
-        faiss.omp_set_num_threads(mp.cpu_count())
-        x_init = self.states[x0]
-        self.centroid = x_init
-        ticker = 0 # Update Ticker
+    def run(self, k) -> np.array:
         t = 0 # Total Steps
-        logging.info(f'Retrieving {k} candidates with starting id: {x0}')
+        logging.info(f'Retrieving {k} candidates...')
         start = time.time()
         while len(self.idx) < k:
             x_cand = np.random.choice(self.id)
             np.delete(self.id, x_cand)
             threshold = self._threshold(np.expand_dims(self.states[x_cand], axis=0))
             logging.debug(f'Threshold value {threshold}')
-            if threshold > self.alpha:
-                ticker += 1
+            if threshold < self.alpha:
                 self.idx.append(x_cand)
-                if ticker % self.update == 0:
-                    logging.debug(f'Updating Centroid at step {t}')
-                    self.centroid = np.expand_dims(np.mean(self.states[self.idx], axis=0), axis=0)
-                
             if t % 1000 == 0:
                 diff = time.time() - start
                 logging.info(f'Time Elapsed over {t} steps: {diff} | {len(self.idx)} candidates found')
@@ -174,7 +148,7 @@ if __name__ == '__main__':
     if args.verbose: log_level = logging.DEBUG
     else: log_level = logging.INFO
     logging.basicConfig(format='%(asctime)s - %(message)s', level=log_level)
-    logging.info('--Initialising Candidate Choice Using Acceptance Threshold Sampler--')
+    logging.info('--Initialising Candidate Choice Using Acceptance Threshold Cosine Similarity Sampler--')
     main(args)
 
 
