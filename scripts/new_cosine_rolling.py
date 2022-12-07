@@ -18,6 +18,7 @@ class AcceptanceConfig(NamedTuple):
     alpha : float 
     update : int 
     compare : str 
+    threshold : str
     gpus : int
 
 '''
@@ -49,9 +50,14 @@ k : int -> Desired number of samples
 
 class Sampler:
     def __init__(self, config : AcceptanceConfig) -> None:
+        faiss.omp_set_num_threads(mp.cpu_count())
         compare = {
             'max' : self._compare_max,
             'mean' : self._compare_mean
+        }
+        threshold = {
+            'random' : self._random_threshold,
+            'set' : self._set_threshold
         }
 
         self.states = config.states
@@ -61,19 +67,21 @@ class Sampler:
         self.update = config.update
 
         self.idx = []
-        self.centroid = np.zeros((1, config.states.shape[-1]), dtype=np.int64)
-        self.threshold = 1.
+        self.centroid = np.zeros((1, config.states.shape[-1]))
+        self.subset = None
+        self.threshold_val = 0.
         self.compare = compare[config.compare]
+        self.threshold = threshold[config.threshold]
         
         self.distance = np.inner
     
-    def _compare_max(self, x) -> float:
-        return np.max(x) < self.threshold
+    def _compare_max(self, x, xs) -> float:
+        return np.max(np.inner(x, xs)) < self.threshold_val
 
-    def _compare_mean(self, x) -> float:
-        return np.mean(x) < self.threshold
+    def _compare_mean(self, x, xs) -> float:
+        return np.mean(np.inner(x, xs)) < self.threshold_val
 
-    def _update_centroid(self) -> None:
+    def _get_subset(self) -> np.array:
         if len(self.idx) > self.sub:
             logging.debug('More candidates than subset')
             indices = np.random.choice(self.idx, self.sub, replace=False)
@@ -83,34 +91,26 @@ class Sampler:
         else:
             logging.debug('Less candidates than subset')
             indices = self.idx
-        candidates = self.states[indices]
+        return self.states[indices]
+
+    def _update_centroid(self) -> None:
+        candidates = self._get_subset()
+        if not candidates: return None
+        self.subset = candidates
         self.centroid = np.expand_dims(np.mean(candidates, axis=0), axis=0)
-        self.threshold = np.mean(self.distance(self.centroid, candidates))
+        self.threshold_val = np.mean(self.distance(self.centroid, candidates))
+    
+    def _set_threshold(self, x):
+        if self.subset: return self.compare(x, self.subset)
+        return self.compare(x, self.centroid)
 
-    def _threshold(self, x):
-        '''
-        Case:
-            * There are more candidates than the desired subset
-            * There are no candidates
-            * There are less candidates than the desired subset
-        '''
-        if len(self.idx) > self.sub:
-            logging.debug('More candidates than subset')
-            indices = np.random.choice(self.idx, self.sub, replace=False)
-        elif len(self.idx) == 0:
-            logging.debug('No Candidates')
-            return -1.
-        else:
-            logging.debug('Less candidates than subset')
-            indices = self.idx
-        
-        vecs = self.states[indices]
-        dist_x = self.distance(x, vecs)
+    def _random_threshold(self, x):
+        vecs = self._get_subset()
+        if not vecs: return True
 
-        return self.compare(dist_x)
+        return self.compare(x, vecs)
 
     def run(self, x0, k) -> np.array:
-        faiss.omp_set_num_threads(mp.cpu_count())
         x_init = self.states[x0]
         self.centroid = np.expand_dims(x_init, axis=0)
         ticker = 0 # Update Ticker
@@ -120,7 +120,7 @@ class Sampler:
         while len(self.idx) < k:
             x_cand = np.random.choice(self.id)
             np.delete(self.id, x_cand)
-            threshold = self._threshold(np.expand_dims(self.states[x_cand], axis=0))
+            threshold = self.threshold(np.expand_dims(self.states[x_cand], axis=0))
             logging.debug(f'Threshold value {threshold}')
             if threshold:
                 ticker += 1
@@ -144,6 +144,7 @@ parser.add_argument('-source', type=str)
 parser.add_argument('-sub', type=int, default=10)
 parser.add_argument('-update', type=int, default=100)
 parser.add_argument('-compare', type=str, default='mean')
+parser.add_argument('-threshold', type=str, default='set')
 parser.add_argument('-samples', type=int, default=1)
 parser.add_argument('-out', type=str, default='/')
 parser.add_argument('-ngpu', type=int, default=0)
@@ -166,6 +167,7 @@ def main(args):
         alpha=None,
         update=args.update,
         compare=args.compare,
+        threshold=args.threshold,
         gpus = args.ngpu
     )
 
