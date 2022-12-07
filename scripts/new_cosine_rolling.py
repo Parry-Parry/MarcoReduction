@@ -19,6 +19,7 @@ class AcceptanceConfig(NamedTuple):
     update : int 
     compare : str 
     threshold : str
+    threshold_init : float
     gpus : int
 
 '''
@@ -69,7 +70,7 @@ class Sampler:
         self.idx = []
         self.centroid = np.zeros((1, config.states.shape[-1]))
         self.subset = None
-        self.threshold_val = 0.
+        self.threshold_val = config.threshold_init
         self.compare = compare[config.compare]
         self.threshold = threshold[config.threshold]
         
@@ -145,6 +146,7 @@ parser.add_argument('-sub', type=int, default=10)
 parser.add_argument('-update', type=int, default=100)
 parser.add_argument('-compare', type=str, default='mean')
 parser.add_argument('-threshold', type=str, default='set')
+parser.add_argument('-threshold_init', type=float, default=1.)
 parser.add_argument('-samples', type=int, default=1)
 parser.add_argument('-out', type=str, default='/')
 parser.add_argument('-ngpu', type=int, default=0)
@@ -168,6 +170,7 @@ def main(args):
         update=args.update,
         compare=args.compare,
         threshold=args.threshold,
+        threshold_init=args.threshold_init
         gpus = args.ngpu
     )
 
