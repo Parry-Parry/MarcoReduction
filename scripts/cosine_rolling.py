@@ -13,7 +13,6 @@ from queryreduce.utils.utils import time_output
 
 class AcceptanceConfig(NamedTuple):
     states : Any
-    metric : str 
     sub : int 
     alpha : float 
     update : int 

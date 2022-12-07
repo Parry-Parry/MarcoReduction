@@ -120,7 +120,7 @@ class Sampler:
         start = time.time()
         while len(self.idx) < k:
             x_cand = np.random.choice(self.id)
-            np.delete(self.id, x_cand)
+            self.id = self.id[np.where(self.id != x_cand)]
             threshold = self.threshold(np.expand_dims(self.states[x_cand], axis=0))
             logging.debug(f'Threshold value {threshold}')
             if threshold:
