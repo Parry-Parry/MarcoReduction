@@ -184,7 +184,7 @@ def main(args):
 
     logging.info(f'{args.samples} samples found in {t} steps, Saving...')
 
-    with open(args.out + f'samples.{args.samples}.pkl', 'wb') as f:
+    with open(args.out + f'samples.cosine.{args.update}.{args.sub}.{args.compare}.{args.threshold}.{args.samples}.pkl', 'wb') as f:
         pickle.dump(I, f)
 
 
