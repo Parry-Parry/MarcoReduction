@@ -96,13 +96,13 @@ class Sampler:
 
     def _update_centroid(self) -> None:
         candidates = self._get_subset()
-        if not candidates: return None
+        if candidates is None: return None
         self.subset = candidates
         self.centroid = np.expand_dims(np.mean(candidates, axis=0), axis=0)
         self.threshold_val = np.mean(self.distance(self.centroid, candidates))
     
     def _set_threshold(self, x):
-        if self.subset: return self.compare(x, self.subset)
+        if self.subset is not None: return self.compare(x, self.subset)
         return self.compare(x, self.centroid)
 
     def _random_threshold(self, x):
