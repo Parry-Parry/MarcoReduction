@@ -107,8 +107,8 @@ class Sampler:
 
     def _random_threshold(self, x):
         vecs = self._get_subset()
-        if not vecs: return True
 
+        if not vecs: return True
         return self.compare(x, vecs)
 
     def run(self, x0, k) -> np.array:
@@ -126,9 +126,10 @@ class Sampler:
             if threshold:
                 ticker += 1
                 self.idx.append(x_cand)
-                if ticker % self.update == 0:
-                    logging.debug(f'Updating Centroid at step {t}')
-                    self._update_centroid()
+            
+            if t % self.update == 0:
+                logging.debug(f'Updating Centroid at step {t}')
+                self._update_centroid()
                 
             if t % 1000 == 0:
                 diff = time.time() - start
