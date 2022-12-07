@@ -170,7 +170,7 @@ def main(args):
         update=args.update,
         compare=args.compare,
         threshold=args.threshold,
-        threshold_init=args.threshold_init
+        threshold_init=args.threshold_init,
         gpus = args.ngpu
     )
 
