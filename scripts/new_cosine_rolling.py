@@ -127,7 +127,7 @@ class Sampler:
                 self.idx.append(x_cand)
                 if ticker % self.update == 0:
                     logging.debug(f'Updating Centroid at step {t}')
-                    self.centroid = np.expand_dims(np.mean(self.states[np.random.choice(self.idx, self.sub, replace=False)], axis=0), axis=0)
+                    self._update_centroid()
                 
             if t % 1000 == 0:
                 diff = time.time() - start
