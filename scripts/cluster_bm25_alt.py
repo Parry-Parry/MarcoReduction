@@ -75,7 +75,7 @@ def main(args):
     types = {col : str for col in cols}
     logging.info('Reading Text...')
     
-    df = pd.read_csv(args.dataset, sep='\t', header=None, index_col=False, names=cols, dtype=types)
+    df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
 
     logging.info('Reading Embeddings...')
     with open(args.embedsource, 'rb') as f:
