@@ -5,6 +5,7 @@ import argparse
 import logging
 from typing import NamedTuple
 import multiprocessing as mp
+from math import ceil
 
 import numpy as np
 import pandas as pd
@@ -43,14 +44,17 @@ class BM25scorer:
         query_df['query'] = df['query']
         query_df['docno'] = 'd1'
         query_df[self.attr] = df['psg+']
+        query_df['cluster_id'] = df['cluster_id']
         query_df['relative_index'] = df['relative_index']
 
         return query_df
+    
+    def score_set(self, df):
+        return self.scorer(self._convert_triple(df))
 
     def score_pairs(self, df, n):
         assert len(df) >= n
-        score_obj = self.scorer.transform(self._convert_triple(df))
-        scoring = score_obj.sort_values(by=['score'])['relative_index'].to_list()
+        scoring = df.sort_values(by=['score'])['relative_index'].to_list()
         return scoring[:n]
 
 parser = argparse.ArgumentParser()
@@ -77,7 +81,7 @@ def main(args):
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
 
-    per_cluster = args.candidates // args.nclust
+    per_cluster = ceil(args.candidates / args.nclust)
 
     config = ClusterConfig(
         niter=args.niter,
@@ -99,8 +103,11 @@ def main(args):
     if args.index: index = args.index
     else: index = None 
     scorer = BM25scorer(index=index)
+
+    scored = scorer.score_set(df)
+
     for i in range(args.nclust):
-        tmp_df = df.loc[df['cluster_id']==i]
+        tmp_df = scored.loc[scored['cluster_id']==i]
         idx.update(scorer.score_pairs(tmp_df, per_cluster))
 
     logging.info('Retrieving Relevant IDs')
