@@ -25,7 +25,7 @@ class ClusterEngine:
     
     def query(self, x) -> np.array:
         assert self.kmeans is not None
-        _, I = self.kmeans.search(x, 1)
+        _, I = self.kmeans.index.search(x, 1)
         return I.ravel()
 
     def train(self, x) -> None:
