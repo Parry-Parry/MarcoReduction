@@ -49,11 +49,10 @@ class BM25scorer:
 
         return query_df
 
-    def score_pairs(self, df, n):
-        assert len(df) >= n
+    def score_pairs(self, df):
         score_obj = self.scorer.transform(self._convert_triple(df))
         scoring = score_obj.sort_values(by=['score'])['relative_index'].tolist()
-        return scoring[:n]
+        return scoring
 
 def clean_text(text):
     pattern = re.compile('[\W_]+')
@@ -109,13 +108,19 @@ def main(args):
     df['psg-'] = df['psg-'].apply(clean_text)
 
     idx =[]
-    logging.info('In Centroid Ranking with BM25...')
+    logging.info(f'In Centroid Ranking with BM25 with {per_cluster} candidates per cluster...')
     if args.index: index = args.index
     else: index = None 
     scorer = BM25scorer(index=index)
     for i in range(args.nclust):
         tmp_df = df.loc[df['cluster_id']==i]
-        idx.extend(scorer.score_pairs(tmp_df, per_cluster))
+        id = scorer.score_pairs(tmp_df)
+        if len(id) >= per_cluster:
+            candidates = id[:per_cluster]
+        else:
+            logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
+            candidates = id
+        idx.extend(candidates)
 
     logging.info('Retrieving Relevant IDs')
     new_df = df.loc[idx]
