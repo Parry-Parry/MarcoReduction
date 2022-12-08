@@ -1,3 +1,4 @@
+import time
 import pyterrier as pt
 pt.init()
 
@@ -25,7 +26,7 @@ class ClusterEngine:
     
     def query(self, x) -> np.array:
         assert self.kmeans is not None
-        _, I = self.kmeans.search(x, 1)
+        _, I = self.kmeans.index.search(x, 1)
         return I.ravel()
 
     def train(self, x) -> None:
@@ -89,6 +90,8 @@ def main(args):
         cmin=per_cluster
     )
 
+    start = time.time()
+
     logging.info('Clustering Embeddings')
     clustering = ClusterEngine(config)
     clustering.train(array)
@@ -112,6 +115,9 @@ def main(args):
 
     logging.info('Retrieving Relevant IDs')
     new_df = df.loc[idx]
+
+    end = time.time()-start 
+    logging.info(f'Completed Triples collection in {end} seconds')
 
     new_df.to_csv(args.out, sep='\t', header=False, index=False)
     return 0
