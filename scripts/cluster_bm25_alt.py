@@ -55,7 +55,7 @@ class BM25scorer:
 
     def score_pairs(self, df, n):
         assert len(df) >= n
-        scoring = df.sort_values(by=['score'])['relative_index'].to_list()
+        scoring = df.sort_values(by=['score'])['relative_index'].tolist()
         return scoring[:n]
 
 parser = argparse.ArgumentParser()
@@ -96,9 +96,9 @@ def main(args):
     clustering = ClusterEngine(config)
     clustering.train(array)
     c_idx = clustering.query(array)
-    index = np.arange(len(array)).to_list()
+    index = np.arange(len(array)).tolist()
     df['qid'] = ['q'+str(x) for x in index]
-    df['cluster_id'] = c_idx.to_list()
+    df['cluster_id'] = c_idx.tolist()
     df['relative_index'] = index
     
     idx =[]
