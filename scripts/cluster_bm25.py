@@ -1,3 +1,4 @@
+import time
 import pyterrier as pt
 pt.init()
 
@@ -71,7 +72,7 @@ def main(args):
     types = {col : str for col in cols}
     logging.info('Reading Text...')
     
-    df = pd.read_csv(args.dataset, sep='\t', header=None, index_col=False, names=cols, dtype=types)
+    df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
 
     logging.info('Reading Embeddings...')
     with open(args.embedsource, 'rb') as f:
@@ -84,6 +85,8 @@ def main(args):
         nclust=args.nclust,
         cmin=per_cluster
     )
+
+    start = time.time()
 
     logging.info('Clustering Embeddings')
     clustering = ClusterEngine(config)
@@ -105,6 +108,9 @@ def main(args):
 
     logging.info('Retrieving Relevant IDs')
     new_df = df.loc[idx]
+
+    end = time.time()-start 
+    logging.info(f'Completed Triples collection in {end} seconds')
 
     new_df.to_csv(args.out, sep='\t', header=False, index=False)
     return 0

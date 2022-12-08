@@ -45,7 +45,6 @@ class BM25scorer:
         query_df['query'] = df['query']
         query_df['docno'] = 'd1'
         query_df[self.attr] = df['psg+']
-        assert np.all(query_df[self.attr].str.len() > 0)
         query_df['cluster_id'] = df['cluster_id']
         query_df['relative_index'] = df['relative_index']
 
