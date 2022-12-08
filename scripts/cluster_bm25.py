@@ -6,6 +6,7 @@ import argparse
 import logging
 from typing import NamedTuple
 import multiprocessing as mp
+import re 
 
 import numpy as np
 import pandas as pd
@@ -54,6 +55,10 @@ class BM25scorer:
         scoring = score_obj.sort_values(by=['score'])['relative_index'].tolist()
         return scoring[:n]
 
+def clean_text(text):
+    pattern = re.compile('[\W_]+')
+    return pattern.sub('', text)
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-textsource', type=str)
@@ -74,6 +79,7 @@ def main(args):
     
     df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
 
+
     logging.info('Reading Embeddings...')
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
@@ -88,7 +94,7 @@ def main(args):
 
     start = time.time()
 
-    logging.info('Clustering Embeddings')
+    logging.info('Clustering Embeddings...')
     clustering = ClusterEngine(config)
     clustering.train(array)
     c_idx = clustering.query(array)
@@ -96,7 +102,12 @@ def main(args):
     df['qid'] = ['q'+str(x) for x in index]
     df['cluster_id'] = c_idx.tolist()
     df['relative_index'] = index
-    
+
+    logging.info('Cleaning Text...')
+    df['query'] = df['query'].apply(clean_text)
+    df['psg+'] = df['psg+'].apply(clean_text)
+    df['psg-'] = df['psg-'].apply(clean_text)
+
     idx =[]
     logging.info('In Centroid Ranking with BM25...')
     if args.index: index = args.index
