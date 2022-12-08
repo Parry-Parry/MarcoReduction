@@ -104,7 +104,7 @@ def main(args):
     scorer = BM25scorer(index=index)
     for i in range(args.nclust):
         tmp_df = df.loc[df['cluster_id']==i]
-        idx.update(scorer.score_pairs(tmp_df, per_cluster))
+        idx.extend(scorer.score_pairs(tmp_df, per_cluster))
 
     logging.info('Retrieving Relevant IDs')
     new_df = df.loc[idx]
