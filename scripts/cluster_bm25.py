@@ -103,9 +103,10 @@ def main(args):
     df['relative_index'] = index
 
     counts = df['cluster_id'].value_counts()
+
     scale = floor(counts.mean())
     diff = per_cluster - scale
-    print(f'Adding {diff} extra samples when over mean: {scale}')
+    print(f'Adding {diff} extra samples when over mean: {scale} and max {counts.max()}')
     '''
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
