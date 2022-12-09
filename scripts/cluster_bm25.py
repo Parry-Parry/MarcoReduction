@@ -104,9 +104,9 @@ def main(args):
 
     counts = df['cluster_id'].value_counts()
 
-    scale = floor(counts.mean())
+    scale = counts.median()
     diff = per_cluster - scale
-    print(f'Adding {diff} extra samples when over mean: {scale} and max {counts.max()}')
+    print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
     '''
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
