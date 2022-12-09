@@ -7,6 +7,7 @@ import logging
 from typing import NamedTuple
 import multiprocessing as mp
 import re 
+from math import floor
 
 import numpy as np
 import pandas as pd
@@ -101,6 +102,10 @@ def main(args):
     df['cluster_id'] = c_idx.tolist()
     df['relative_index'] = index
 
+    counts = df['cluster_id'].value_counts()
+    scale = floor(counts.mean())
+    diff = per_cluster - scale
+
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
     df['psg+'] = df['psg+'].apply(clean_text)
@@ -115,11 +120,16 @@ def main(args):
         tmp_df = df.loc[df['cluster_id']==i]
         id = scorer.score_pairs(tmp_df)
         if len(id) >= per_cluster:
-            candidates = id[:per_cluster]
+            if counts[i] > scale: candidates = id[:per_cluster+diff]
+            else: candidates = id[:per_cluster]
         else:
             logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
             candidates = id
         idx.extend(candidates)
+    
+    logging.info(f'{len(idx)} total candidates found')
+    
+    idx = idx[:args.candidates]
 
     logging.info('Retrieving Relevant IDs')
     new_df = triples_df.loc[idx]
