@@ -55,8 +55,7 @@ class BM25scorer:
         return scoring
 
 def clean_text(text):
-    pattern = re.compile('[\W_]+')
-    return pattern.sub('', text)
+    return re.sub(r'[^A-Za-z0-9 ]+', '', text)
 
 parser = argparse.ArgumentParser()
 
