@@ -104,10 +104,10 @@ def main(args):
 
     counts = df['cluster_id'].value_counts()
 
-    scale = counts.median()
-    diff = scale // per_cluster
+    scale = counts.mean()
+    diff = floor(scale / per_cluster)
     print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
-    '''
+    
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
     df['psg+'] = df['psg+'].apply(clean_text)
@@ -131,7 +131,7 @@ def main(args):
     
     logging.info(f'{len(idx)} total candidates found')
     
-    idx = idx[:args.candidates]
+    idx = np.random.choice(idx, args.candidates, replace=False)
 
     logging.info('Retrieving Relevant IDs')
     new_df = triples_df.loc[idx]
@@ -140,7 +140,7 @@ def main(args):
     logging.info(f'Completed Triples collection in {end} seconds')
 
     new_df.to_csv(args.out, sep='\t', header=False, index=False)
-    '''
+    
     return 0
 
 if __name__ == '__main__':
