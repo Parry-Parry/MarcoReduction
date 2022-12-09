@@ -108,7 +108,7 @@ def main(args):
 
     idx =[]
     logging.info(f'In Centroid Ranking with BM25 with {per_cluster} candidates per cluster...')
-    if args.index: index = args.index
+    if args.index: index = pt.BatchRetrieve.from_dataset('msmarco_passage', args.index, wmodel='BM25')
     else: index = None 
     scorer = BM25scorer(index=index)
     for i in range(args.nclust):
