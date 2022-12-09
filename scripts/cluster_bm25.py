@@ -105,7 +105,8 @@ def main(args):
     counts = df['cluster_id'].value_counts()
     scale = floor(counts.mean())
     diff = per_cluster - scale
-
+    print(f'Adding {diff} extra samples when over mean: {scale}')
+    '''
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
     df['psg+'] = df['psg+'].apply(clean_text)
@@ -138,6 +139,7 @@ def main(args):
     logging.info(f'Completed Triples collection in {end} seconds')
 
     new_df.to_csv(args.out, sep='\t', header=False, index=False)
+    '''
     return 0
 
 if __name__ == '__main__':
