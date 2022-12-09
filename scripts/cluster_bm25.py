@@ -105,7 +105,7 @@ def main(args):
     counts = df['cluster_id'].value_counts()
 
     scale = counts.median()
-    diff = per_cluster - scale
+    diff = scale // per_cluster
     print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
     '''
     logging.info('Cleaning Text...')
