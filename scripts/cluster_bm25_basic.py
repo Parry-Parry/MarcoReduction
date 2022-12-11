@@ -86,7 +86,7 @@ def main(args):
     logging.info('Reading Embeddings...')
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
-        array = array[:, 2*768]
+        array = array[:, :2*768]
 
     per_cluster = ceil(args.candidates / args.nclust)
 
