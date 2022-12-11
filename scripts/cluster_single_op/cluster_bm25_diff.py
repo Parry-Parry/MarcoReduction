@@ -52,7 +52,7 @@ class BM25scorer:
         return query_df
     
     def score_set(self, df, focus):
-        return self.scorer(self._convert_triple(df, focus))
+        return self.scorer.transform(self._convert_triple(df, focus))
 
     def score_pairs(self, df):
         scoring = df.sort_values(by=['diff'])['relative_index'].tolist()

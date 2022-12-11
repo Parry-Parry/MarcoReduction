@@ -52,16 +52,15 @@ class BM25scorer:
         return query_df
     
     def score_set(self, df):
-        return self.scorer(self._convert_triple(df))
+        return self.scorer.transform(self._convert_triple(df))
 
     def score_pairs(self, df):
         scoring = df.sort_values(by=['score'])['relative_index'].tolist()
         return scoring
 
 def clean_text(text):
-    pattern = re.compile('[\W_]+')
-    return pattern.sub('', text)
-
+    return re.sub(r'[^A-Za-z0-9 ]+', '', text)
+    
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-textsource', type=str)
