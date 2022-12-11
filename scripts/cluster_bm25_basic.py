@@ -60,7 +60,7 @@ class BM25scorer:
 
 def clean_text(text):
     return re.sub(r'[^A-Za-z0-9 ]+', '', text)
-    
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-textsource', type=str)
@@ -127,7 +127,7 @@ def main(args):
     scorer = BM25scorer(index=index)
     for i in range(args.nclust):
         tmp_df = df.loc[df['cluster_id']==i]
-        tmp_idx = scorer.score_set(scorer.score_pairs(tmp_df))
+        tmp_idx = scorer.score_pairs(scorer.score_set(tmp_df))
         if len(tmp_idx) >= per_cluster:
             if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff]
             else: candidates = tmp_idx[:per_cluster]
