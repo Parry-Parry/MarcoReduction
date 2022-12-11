@@ -136,7 +136,7 @@ def main(args):
             if counts[i] > scale: candidates = scores[:per_cluster+diff]
             else: candidates = scores[:per_cluster]
         else:
-            logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
+            logging.info(f'Cluster {i} has too few candidates: {len(tmp_idx)} found')
             candidates = scores
         idx.extend(candidates)
 

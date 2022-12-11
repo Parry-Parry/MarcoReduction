@@ -134,7 +134,7 @@ def main(args):
             if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff]
             else: candidates = tmp_idx[:per_cluster]
         else:
-            logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
+            logging.info(f'Cluster {i} has too few candidates: {len(tmp_idx)} found')
             candidates = tmp_idx
         idx.extend(candidates)
 
