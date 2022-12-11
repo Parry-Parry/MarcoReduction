@@ -7,7 +7,7 @@ import argparse
 import logging
 from typing import NamedTuple
 import multiprocessing as mp
-from math import ceil
+from math import ceil, floor
 
 import numpy as np
 import pandas as pd
@@ -86,6 +86,7 @@ def main(args):
     logging.info('Reading Embeddings...')
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
+        array = array[:, 2*768]
 
     per_cluster = ceil(args.candidates / args.nclust)
 
@@ -106,6 +107,12 @@ def main(args):
     df['cluster_id'] = c_idx.tolist()
     df['relative_index'] = index
 
+    counts = df['cluster_id'].value_counts()
+
+    scale = counts.median()
+    diff = floor(scale / per_cluster)
+    print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
+
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
     df['psg+'] = df['psg+'].apply(clean_text)
@@ -113,7 +120,10 @@ def main(args):
     
     idx =[]
     logging.info('In Centroid Ranking with BM25...')
-    if args.index: index = args.index
+   
+    if args.index: 
+        ds = pt.get_dataset(args.index)
+        index = pt.IndexFactory.of(ds.get_index(variant='train'))
     else: index = None 
     scorer = BM25scorer(index=index)
 
@@ -121,7 +131,14 @@ def main(args):
 
     for i in range(args.nclust):
         tmp_df = scored.loc[scored['cluster_id']==i]
-        idx.extend(scorer.score_pairs(tmp_df, per_cluster))
+        scores = scorer.score_pairs(tmp_df, per_cluster)
+        if len(scores) >= per_cluster:
+            if counts[i] > scale: candidates = scores[:per_cluster+diff]
+            else: candidates = scores[:per_cluster]
+        else:
+            logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
+            candidates = scores
+        idx.extend(candidates)
 
     logging.info('Retrieving Relevant IDs')
     new_df = df.loc[idx]
