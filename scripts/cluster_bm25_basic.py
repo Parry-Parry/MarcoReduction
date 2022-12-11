@@ -54,7 +54,7 @@ class BM25scorer:
     def score_set(self, df):
         return self.scorer(self._convert_triple(df))
 
-    def score_pairs(self, df, n):
+    def score_pairs(self, df):
         scoring = df.sort_values(by=['score'])['relative_index'].tolist()
         return scoring
 
