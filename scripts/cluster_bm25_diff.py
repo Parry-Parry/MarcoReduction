@@ -121,7 +121,7 @@ def main(args):
    
     if args.index: 
         ds = pt.get_dataset(args.index)
-        index = pt.IndexFactory.of(ds.get_index(variant='train'))
+        index = pt.IndexFactory.of(ds.get_index(variant='terrier_stemmed'))
     else: index = None 
     scorer = BM25scorer(index=index)
 
