@@ -125,21 +125,20 @@ def main(args):
     else: index = None 
     scorer = BM25scorer(index=index)
 
+    scored = scorer.score_set(df, 'psg+')
+    neg = scorer.score_set(df, 'psg-')
+    scored['diff'] = scored['score'] - neg['scored']
+
     for i in range(args.nclust):
-        tmp_df = df.loc[df['cluster_id']==i]
-        scoring = scorer.score_set(tmp_df, 'psg+')
-        scoring['diff'] = scoring['score'] - scorer.score_set(tmp_df, 'psg-')['score']
-        tmp_idx = scorer.score_pairs(scoring)
-        if len(tmp_idx) >= per_cluster:
-            if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff]
-            else: candidates = tmp_idx[:per_cluster]
+        tmp_df = scored.loc[scored['cluster_id']==i]
+        scores = scorer.score_pairs(tmp_df, per_cluster)
+        if len(scores) >= per_cluster:
+            if counts[i] > scale: candidates = scores[:per_cluster+diff]
+            else: candidates = scores[:per_cluster]
         else:
             logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
-            candidates = tmp_idx
+            candidates = scores
         idx.extend(candidates)
-
-    logging.info(f'{len(idx)} total candidates found')
-    idx = np.random.choice(idx, args.candidates, replace=False)
 
     logging.info('Retrieving Relevant IDs')
     new_df = triples_df.loc[idx]

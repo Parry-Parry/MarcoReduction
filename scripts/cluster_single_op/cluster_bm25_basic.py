@@ -40,26 +40,28 @@ class BM25scorer:
         if index: self.scorer = pt.text.scorer(body_attr=attr, wmodel='BM25', background_index=index)
         else: self.scorer = pt.text.scorer(body_attr=attr, wmodel='BM25')
 
-    def _convert_triple(self, df, focus):
+    def _convert_triple(self, df):
         query_df = pd.DataFrame()
         query_df['qid'] = df['qid']
         query_df['query'] = df['query']
         query_df['docno'] = 'd1'
-        query_df[self.attr] = df[focus]
+        query_df[self.attr] = df['psg+']
         query_df['cluster_id'] = df['cluster_id']
         query_df['relative_index'] = df['relative_index']
 
         return query_df
     
-    def score_set(self, df, focus):
-        return self.scorer(self._convert_triple(df, focus))
+    def score_set(self, df):
+        return self.scorer(self._convert_triple(df))
 
-    def score_pairs(self, df):
-        scoring = df.sort_values(by=['diff'])['relative_index'].tolist()
-        return scoring
+    def score_pairs(self, df, n):
+        assert len(df) >= n
+        scoring = df.sort_values(by=['score'])['relative_index'].tolist()
+        return scoring[:n]
 
 def clean_text(text):
-    return re.sub(r'[^A-Za-z0-9 ]+', '', text)
+    pattern = re.compile('[\W_]+')
+    return pattern.sub('', text)
 
 parser = argparse.ArgumentParser()
 
@@ -79,14 +81,14 @@ def main(args):
     types = {col : str for col in cols}
     logging.info('Reading Text...')
     
-    triples_df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
-    df = triples_df.copy()
+    df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
 
     logging.info('Reading Embeddings...')
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
+        array = np.ascontiguousarray(array[:, :2*768])
 
-    per_cluster = args.candidates // args.nclust
+    per_cluster = ceil(args.candidates / args.nclust)
 
     config = ClusterConfig(
         niter=args.niter,
@@ -125,24 +127,21 @@ def main(args):
     else: index = None 
     scorer = BM25scorer(index=index)
 
+    scored = scorer.score_set(df)
+
     for i in range(args.nclust):
-        tmp_df = df.loc[df['cluster_id']==i]
-        scoring = scorer.score_set(tmp_df, 'psg+')
-        scoring['diff'] = scoring['score'] - scorer.score_set(tmp_df, 'psg-')['score']
-        tmp_idx = scorer.score_pairs(scoring)
-        if len(tmp_idx) >= per_cluster:
-            if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff]
-            else: candidates = tmp_idx[:per_cluster]
+        tmp_df = scored.loc[scored['cluster_id']==i]
+        scores = scorer.score_pairs(tmp_df, per_cluster)
+        if len(scores) >= per_cluster:
+            if counts[i] > scale: candidates = scores[:per_cluster+diff]
+            else: candidates = scores[:per_cluster]
         else:
             logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
-            candidates = tmp_idx
+            candidates = scores
         idx.extend(candidates)
 
-    logging.info(f'{len(idx)} total candidates found')
-    idx = np.random.choice(idx, args.candidates, replace=False)
-
     logging.info('Retrieving Relevant IDs')
-    new_df = triples_df.loc[idx]
+    new_df = df.loc[idx]
 
     end = time.time()-start 
     logging.info(f'Completed Triples collection in {end} seconds')

@@ -55,9 +55,8 @@ class BM25scorer:
         return self.scorer(self._convert_triple(df))
 
     def score_pairs(self, df, n):
-        assert len(df) >= n
         scoring = df.sort_values(by=['score'])['relative_index'].tolist()
-        return scoring[:n]
+        return scoring
 
 def clean_text(text):
     pattern = re.compile('[\W_]+')
@@ -81,7 +80,8 @@ def main(args):
     types = {col : str for col in cols}
     logging.info('Reading Text...')
     
-    df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
+    triples_df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
+    df = triples_df.copy()
 
     logging.info('Reading Embeddings...')
     with open(args.embedsource, 'rb') as f:
@@ -126,22 +126,22 @@ def main(args):
         index = pt.IndexFactory.of(ds.get_index(variant='terrier_stemmed'))
     else: index = None 
     scorer = BM25scorer(index=index)
-
-    scored = scorer.score_set(df)
-
     for i in range(args.nclust):
-        tmp_df = scored.loc[scored['cluster_id']==i]
-        scores = scorer.score_pairs(tmp_df, per_cluster)
-        if len(scores) >= per_cluster:
-            if counts[i] > scale: candidates = scores[:per_cluster+diff]
-            else: candidates = scores[:per_cluster]
+        tmp_df = df.loc[df['cluster_id']==i]
+        tmp_idx = scorer.score_set(scorer.score_pairs(tmp_df))
+        if len(tmp_idx) >= per_cluster:
+            if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff]
+            else: candidates = tmp_idx[:per_cluster]
         else:
-            logging.info(f'Cluster {i} has too few candidates: {len(id)} found')
-            candidates = scores
+            logging.info(f'Cluster {i} has too few candidates: {len(tmp_idx)} found')
+            candidates = tmp_idx
         idx.extend(candidates)
 
+    logging.info(f'{len(idx)} total candidates found')
+    idx = np.random.choice(idx, args.candidates, replace=False)
+
     logging.info('Retrieving Relevant IDs')
-    new_df = df.loc[idx]
+    new_df = triples_df.loc[idx]
 
     end = time.time()-start 
     logging.info(f'Completed Triples collection in {end} seconds')
