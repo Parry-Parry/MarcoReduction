@@ -86,7 +86,7 @@ def main(args):
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
 
-    per_cluster = ceil(args.candidates / args.nclust)
+    per_cluster = args.candidates // args.nclust
 
     config = ClusterConfig(
         niter=args.niter,
