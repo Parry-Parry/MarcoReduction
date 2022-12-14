@@ -24,7 +24,7 @@ class Process:
         self.norm = lambda x : x / np.linalg.norm(x)
 
     def _distance(self, x, mean):
-        return np.mean(cosine_similarity(x, mean), axis=0)
+        return np.mean(cosine_similarity(x.reshape(1, -1), mean), axis=0)
 
     def _get_indices(self): # Check we have enough candidates to sample
         c = list(self.c)
@@ -40,7 +40,7 @@ class Process:
         if len(idx) > 1:
             return self.triples[idx] # Get random K from candidate set
         else:
-            return self.triples[idx]
+            return self.triples[idx].reshape(1, -1)
 
     def _step(self):
         c_id = np.random.choice(self.index) 
