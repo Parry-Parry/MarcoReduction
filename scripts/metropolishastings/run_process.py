@@ -21,10 +21,8 @@ class Process:
         self.t = config.t # Threshold similarity
         self.c = None # Set of Candidates
 
-        self.norm = lambda x : x / np.linalg.norm(x)
-
     def _distance(self, x, mean):
-        return np.mean(cosine_similarity(x.reshape(1, -1), mean), axis=0)
+        return np.mean(cosine_similarity(x.reshape(1, -1), mean))
 
     def _get_indices(self): # Check we have enough candidates to sample
         c = list(self.c)
