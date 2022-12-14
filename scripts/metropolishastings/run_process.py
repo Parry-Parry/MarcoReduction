@@ -89,7 +89,7 @@ def main(args):
     triples_df = pd.read_csv(args.textsource, sep='\t', header=None, index_col=False, names=cols, dtype=types)
 
     logging.info('Reading Embeddings...')
-    with open(args.source, 'rb') as f:
+    with open(args.embedsource, 'rb') as f:
         array = np.load(f)
     
     config = Config(
