@@ -4,7 +4,6 @@ import argparse
 import logging 
 import time 
 from typing import Any, NamedTuple
-from sklearn.metrics.pairwise import cosine_similarity
 
 class Config(NamedTuple):
     triples : Any
@@ -20,11 +19,12 @@ class Process:
         self.k = config.k # Num samples for mean
         self.t = config.t # Threshold similarity
         self.c = None # Set of Candidates
+        self.centroid = None
 
         self.norm = lambda x : x / np.linalg.norm(x)
 
     def _distance(self, x, mean):
-        return np.mean(cosine_similarity(x, mean), axis=0)
+        return np.inner(self.norm(x), self.norm(mean))
 
     def _get_indices(self): # Check we have enough candidates to sample
         c = list(self.c)
@@ -34,11 +34,11 @@ class Process:
         else:
             return c 
     
-    def _get_candidates(self):
+    def _get_mean(self):
         idx = self._get_indices()
 
         if len(idx) > 1:
-            return self.triples[idx] # Get random K from candidate set
+            return np.mean(self.triples[idx], axis=0) # Get random K from candidate set
         else:
             return self.triples[idx]
 
@@ -46,7 +46,7 @@ class Process:
         c_id = np.random.choice(self.index) 
         c = self.triples[c_id] # Get random candidate
 
-        K = self._get_candidates()
+        K = self._get_mean()
         d = self._distance(c, K) # Cosine Similarity
 
         if d < self.t: # If candidate dissimilarity over threshold
