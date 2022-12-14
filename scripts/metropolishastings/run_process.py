@@ -68,7 +68,7 @@ class Process:
 
         logging.info(f'Completed collection in {end} seconds')
 
-        return np.array(list(self.c)), t
+        return list(self.c), t
 
 
 parser = argparse.ArgumentParser()
