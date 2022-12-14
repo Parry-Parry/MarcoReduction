@@ -22,14 +22,15 @@ class Process:
         self.norm = lambda x : x / np.linalg.norm(x)
 
     def _distance(self, x, mean):
-        return np.dot(self.norm(x), self.norm(mean))
+        return np.inner(self.norm(x), self.norm(mean))
 
     def _get_indices(self): # Check we have enough candidates to sample
-        l_c = len(self.c)
+        c = list(self.c)
+        l_c = len(c)
         if l_c > self.k:
-            return np.random.choice(self.c, self.k, replace=False)
+            return np.random.choice(c, self.k, replace=False)
         else:
-            return self.c 
+            return c 
     
     def _get_mean(self):
         idx = self._get_indices()
