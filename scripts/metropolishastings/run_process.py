@@ -42,7 +42,7 @@ class Process:
 
     def _step(self):
         c_id = np.random.choice(self.index) 
-        c = self.triples[c] # Get random candidate
+        c = self.triples[c_id] # Get random candidate
 
         K = self._get_mean()
         d = self._distance(c, K) # Cosine Similarity
