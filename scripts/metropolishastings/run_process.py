@@ -107,7 +107,7 @@ def main(args):
 
     idx, t = model.run(start_id, args.c)
 
-    new_df = triples_df[idx]
+    new_df = triples_df.loc[idx]
 
     new_df.to_csv(args.out, sep='\t', header=False, index=False)
 

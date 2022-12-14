@@ -13,6 +13,8 @@ import numpy as np
 import pandas as pd
 import faiss 
 
+from scipy.spatial.distance import cosine
+
 class ClusterConfig(NamedTuple):
     niter : int
     nclust : int 
@@ -39,9 +41,7 @@ def cosine_scoring(array):
     p1 = array[:, args.dim:2*args.dim]
     p2 = array[:, 2*args.dim:3*args.dim]
 
-    p1_sim = np.vectorize(lambda x: )
-
-    return np.dot(q, p1) - np.dot(q, p2)
+    return cosine(q, p1) - cosine(q, p2)
 
 parser = argparse.ArgumentParser()
 
