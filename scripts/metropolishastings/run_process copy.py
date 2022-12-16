@@ -20,7 +20,6 @@ class Process:
         self.k = config.k # Num samples for mean
         self.t = config.t # Threshold similarity
         self.c = None # Set of Candidates
-        self.threshold = None
 
     def _distance(self, x, mean):
         return np.mean(cosine_similarity(x.reshape(1, -1), mean))
@@ -29,15 +28,11 @@ class Process:
         c = list(self.c)
         l_c = len(c)
         if l_c > self.k:
-            choice = np.random.choice(c, self.k, replace=False)
-            self.threshold = choice
-            return choice
+            return np.random.choice(c, self.k, replace=False)
         else:
             return c 
     
     def _get_candidates(self):
-        if self.threshold:
-            return self.triples[self.threshold]
         idx = self._get_indices()
 
         if len(idx) > 1:
@@ -80,8 +75,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('-textsource', type=str)
 parser.add_argument('-embedsource', type=str)
-parser.add_argument('-k', type=int, nargs='+')
-parser.add_argument('-t', type=float, nargs='+')
+parser.add_argument('-k', type=int, default=100)
+parser.add_argument('-t', type=float, default=0.0)
 parser.add_argument('-c', type=int, default=1e5)
 parser.add_argument('-out', type=str)
 parser.add_argument('--start', type=int)
@@ -98,26 +93,25 @@ def main(args):
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
     
-    for k in args.k:
-        for t in args.t:
-            config = Config(
-                triples=array,
-                k = args.k,
-                t = args.t
-            )
+    config = Config(
+        triples=array,
+        k = args.k,
+        t = args.t
+    )
 
-            model = Process(config)
-            if args.start:
-                start_id = args.start 
-            else:
-                start_id = np.random.randint(0, len(config.triples))
+    model = Process(config)
+    if args.start:
+        start_id = args.start 
+    else:
+        start_id = np.random.randint(0, len(config.triples))
 
-            idx, t = model.run(start_id, args.c)
-            new_df = triples_df.loc[idx]
+    idx, t = model.run(start_id, args.c)
 
-            new_df.to_csv(args.out + f'mhcosine.{k}.{t}.tsv', sep='\t', header=False, index=False)
+    new_df = triples_df.loc[idx]
 
-            logging.info(f'{args.c} samples found in {t} steps, Saving...')
+    new_df.to_csv(args.out, sep='\t', header=False, index=False)
+
+    logging.info(f'{args.c} samples found in {t} steps, Saving...')
 
     return 0 
 
@@ -125,5 +119,5 @@ def main(args):
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
-    logging.info('--Initialising Candidate Choice Using Metropolis Hastings Process--')
+    logging.info('--Initialising Candidate Choice Using Markov Process--')
     main(parser.parse_args())
