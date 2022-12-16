@@ -91,9 +91,11 @@ def main(args):
 
         scale = np.median(counts)
         diff = floor(scale / per_cluster)
+
+        print(per_cluster)
         print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
         
-        idx =[]
+        idx = []
         logging.info('In Centroid Ranking with Cosine Similarity...')
 
         for i in range(c):
