@@ -72,7 +72,6 @@ def main(args):
     for c in args.nclust:
 
         per_cluster = args.candidates // c
-        logging.info(args.candidates)
 
         config = ClusterConfig(
             niter=args.niter,
@@ -90,11 +89,10 @@ def main(args):
 
         counts = np.unique(c_idx)
 
-        scale = np.median(counts)
+        scale = np.mean(counts)
         diff = floor(scale / per_cluster)
 
-        logging.info(per_cluster)
-        logging.info(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
+        logging.info(f'Adding {diff} extra samples when over mean: {scale} and max {counts.max()}')
         
         idx = []
         logging.info('In Centroid Ranking with Cosine Similarity...')
