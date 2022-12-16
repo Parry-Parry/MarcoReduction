@@ -59,7 +59,7 @@ class Process:
     
     def run(self, x0, k):
         self.state_id = x0
-        t = 0 
+        step = 0 
         self.c = set() # Set allows for the compiler to ignore candidates we have already accepted
         logging.info(f'Retrieving {k} candidates with starting id: {x0}')
         assert self.c is not None
@@ -67,8 +67,8 @@ class Process:
         start = time.time()
         while len(self.c) < k:
             self.c.add(self._step())
-            t += 1
-            if t % 1000: logging.info(f'{t} steps complete, {len(self.c)} candidates found')
+            step += 1
+            if step % 1000: logging.info(f'{step} steps complete, {len(self.c)} candidates found')
         end = time.time() - start 
 
         logging.info(f'Completed collection in {end} seconds')
@@ -112,12 +112,12 @@ def main(args):
             else:
                 start_id = np.random.randint(0, len(config.triples))
 
-            idx, t = model.run(start_id, args.c)
+            idx, steps = model.run(start_id, args.c)
             new_df = triples_df.loc[idx]
 
             new_df.to_csv(args.out + f'mhcosine.{k}.{t}.tsv', sep='\t', header=False, index=False)
 
-            logging.info(f'{args.c} samples found in {t} steps, Saving...')
+            logging.info(f'{args.c} samples found in {steps} steps, Saving...')
 
     return 0 
 

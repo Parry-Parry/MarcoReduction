@@ -72,6 +72,7 @@ def main(args):
     for c in args.nclust:
 
         per_cluster = args.candidates // c
+        print(args.candidates)
 
         config = ClusterConfig(
             niter=args.niter,
