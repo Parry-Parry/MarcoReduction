@@ -102,8 +102,8 @@ def main(args):
         for t in args.t:
             config = Config(
                 triples=array,
-                k = args.k,
-                t = args.t
+                k = k,
+                t = t
             )
 
             model = Process(config)
