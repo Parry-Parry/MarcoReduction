@@ -120,7 +120,7 @@ def main(args):
         logging.info(f'Completed Triples collection in {end} seconds')
 
         new_df.to_csv(args.out + f'cosine.{c}.tsv', sep='\t', header=False, index=False)
-        return 0
+    return 0
 
 if __name__ == '__main__':
     args = parser.parse_args()
