@@ -36,7 +36,7 @@ class Process:
             return c 
     
     def _get_candidates(self):
-        if self.threshold:
+        if self.threshold is not None:
             return self.triples[self.threshold]
         idx = self._get_indices()
 
