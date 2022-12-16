@@ -48,7 +48,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-textsource', type=str)
 parser.add_argument('-embedsource', type=str)
 parser.add_argument('-niter', type=int)
-parser.add_argument('-nclust', type=int)
+parser.add_argument('-nclust', type=int, nargs='+')
 parser.add_argument('-dim', type=int)
 parser.add_argument('-candidates', type=int)
 parser.add_argument('-out', type=str)
@@ -69,54 +69,56 @@ def main(args):
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
 
-    per_cluster = args.candidates // args.nclust
+    for c in args.nclust:
 
-    config = ClusterConfig(
-        niter=args.niter,
-        nclust=args.nclust,
-        cmin=per_cluster
-    )
+        per_cluster = args.candidates // c
 
-    start = time.time()
+        config = ClusterConfig(
+            niter=args.niter,
+            nclust=c,
+            cmin=per_cluster
+        )
 
-    logging.info('Clustering Embeddings')
-    clustering = ClusterEngine(config)
-    clustering.train(array)
-    c_idx = clustering.query(array)
-    index = np.arange(len(array))
+        start = time.time()
 
-    counts = np.unique(c_idx)
+        logging.info('Clustering Embeddings')
+        clustering = ClusterEngine(config)
+        clustering.train(array)
+        c_idx = clustering.query(array)
+        index = np.arange(len(array))
 
-    scale = np.median(counts)
-    diff = floor(scale / per_cluster)
-    print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
-    
-    idx =[]
-    logging.info('In Centroid Ranking with Cosine Similarity...')
+        counts = np.unique(c_idx)
 
-    for i in range(args.nclust):
-        tmp_array = array[np.where(c_idx==i)]
-        scoring = None
-        tmp_idx = index[scoring]
-        if len(tmp_array) >= per_cluster:
-            if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff].tolist()
-            else: candidates = tmp_idx[:per_cluster].tolist()
-        else:
-            logging.info(f'Cluster {i} has too few candidates: {len(tmp_idx)} found')
-            candidates = tmp_idx.tolist()
-        idx.extend(candidates)
+        scale = np.median(counts)
+        diff = floor(scale / per_cluster)
+        print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
+        
+        idx =[]
+        logging.info('In Centroid Ranking with Cosine Similarity...')
 
-    logging.info(f'{len(idx)} total candidates found')
-    idx = np.random.choice(idx, args.candidates, replace=False)
+        for i in range(c):
+            tmp_array = array[np.where(c_idx==i)]
+            scoring = None
+            tmp_idx = index[scoring]
+            if len(tmp_array) >= per_cluster:
+                if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff].tolist()
+                else: candidates = tmp_idx[:per_cluster].tolist()
+            else:
+                logging.info(f'Cluster {i} has too few candidates: {len(tmp_idx)} found')
+                candidates = tmp_idx.tolist()
+            idx.extend(candidates)
 
-    logging.info('Retrieving Relevant IDs')
-    new_df = triples_df.loc[idx]
+        logging.info(f'{len(idx)} total candidates found')
+        idx = np.random.choice(idx, args.candidates, replace=False)
 
-    end = time.time()-start 
-    logging.info(f'Completed Triples collection in {end} seconds')
+        logging.info('Retrieving Relevant IDs')
+        new_df = triples_df.loc[idx]
 
-    new_df.to_csv(args.out, sep='\t', header=False, index=False)
-    return 0
+        end = time.time()-start 
+        logging.info(f'Completed Triples collection in {end} seconds')
+
+        new_df.to_csv(args.out + f'cosine.{c}.tsv', sep='\t', header=False, index=False)
+        return 0
 
 if __name__ == '__main__':
     args = parser.parse_args()
