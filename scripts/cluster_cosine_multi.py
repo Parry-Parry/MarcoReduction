@@ -109,7 +109,8 @@ def main(args):
             idx.extend(candidates)
 
         logging.info(f'{len(idx)} total candidates found')
-        print(idx.shape, args.candidates)
+        print(args.candidates)
+        print(idx)
         idx = np.random.choice(idx, args.candidates, replace=False)
 
         logging.info('Retrieving Relevant IDs')
