@@ -37,9 +37,9 @@ class ClusterEngine:
         self.kmeans.train(x)
 
 def cosine_scoring(array):
-    q = array[:, :args.dim]
-    p1 = array[:, args.dim:2*args.dim]
-    p2 = array[:, 2*args.dim:3*args.dim]
+    q = array[:args.dim]
+    p1 = array[args.dim:2*args.dim]
+    p2 = array[2*args.dim:3*args.dim]
 
     return cosine(q, p1) - cosine(q, p2)
 
@@ -98,19 +98,18 @@ def main(args):
 
         for i in range(c):
             tmp_array = array[np.where(c_idx==i)]
-            scoring = None
-            tmp_idx = index[scoring]
+            tmp_idx = index[np.where(c_idx==i)]
+            scoring = np.apply_along_axis(cosine_scoring, 1, tmp_array)
+            ranked_idx = tmp_idx[np.argsort(scoring)]
             if len(tmp_array) >= per_cluster:
-                if counts[i] > scale: candidates = tmp_idx[:per_cluster+diff].tolist()
-                else: candidates = tmp_idx[:per_cluster].tolist()
+                if counts[i] > scale: candidates = ranked_idx[:per_cluster+diff].tolist()
+                else: candidates = ranked_idx[:per_cluster].tolist()
             else:
-                logging.info(f'Cluster {i} has too few candidates: {len(tmp_idx)} found')
-                candidates = tmp_idx.tolist()
+                logging.info(f'Cluster {i} has too few candidates: {len(ranked_idx)} found')
+                candidates = ranked_idx.tolist()
             idx.extend(candidates)
 
         logging.info(f'{len(idx)} total candidates found')
-        print(args.candidates)
-        print(idx)
         idx = np.random.choice(idx, args.candidates, replace=False)
 
         logging.info('Retrieving Relevant IDs')
