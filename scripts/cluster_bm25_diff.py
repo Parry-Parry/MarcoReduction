@@ -1,3 +1,4 @@
+import pickle
 import re
 import time
 import pyterrier as pt
@@ -146,6 +147,10 @@ def main(args):
 
     end = time.time()-start 
     logging.info(f'Completed Triples collection in {end} seconds')
+
+    if args.idxout:
+        with open(args.idxout + f'mhcosine.{k}.{t}.pkl', 'wb') as f:
+            pickle.dump(idx, f)
 
     new_df.to_csv(args.out, sep='\t', header=False, index=False)
     return 0

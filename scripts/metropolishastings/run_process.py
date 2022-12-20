@@ -1,3 +1,4 @@
+import pickle
 import numpy as np 
 import pandas as pd
 import argparse
@@ -84,6 +85,7 @@ parser.add_argument('-k', type=int, nargs='+')
 parser.add_argument('-t', type=float, nargs='+')
 parser.add_argument('-c', type=int, default=1e5)
 parser.add_argument('-out', type=str)
+parser.add_argument('-idxout', type=str)
 parser.add_argument('--start', type=int)
 
 
@@ -115,7 +117,11 @@ def main(args):
             idx, steps = model.run(start_id, args.c)
             new_df = triples_df.loc[idx]
 
-            new_df.to_csv(args.out + f'mhcosine.{k}.{t}.tsv', sep='\t', header=False, index=False)
+            if args.idxout:
+                with open(args.idxout + f'mhcosine.{k}.{t}.{args.c}.pkl', 'wb') as f:
+                    pickle.dump(idx, f)
+
+            new_df.to_csv(args.out + f'mh.{k}.{t}.{args.c}.tsv', sep='\t', header=False, index=False)
 
             logging.info(f'{args.c} samples found in {steps} steps, Saving...')
 
