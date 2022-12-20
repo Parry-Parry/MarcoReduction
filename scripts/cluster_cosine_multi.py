@@ -91,10 +91,10 @@ def main(args):
 
         counts = np.unique(c_idx)
 
-        scale = np.mean(counts)
+        scale = np.median(counts)
         diff = floor(scale / per_cluster)
 
-        logging.info(f'Adding {diff} extra samples when over mean: {scale} and max {counts.max()}')
+        logging.info(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
         
         idx = []
         logging.info('In Centroid Ranking with Cosine Similarity...')
