@@ -85,7 +85,7 @@ parser.add_argument('-k', type=int, nargs='+')
 parser.add_argument('-t', type=float, nargs='+')
 parser.add_argument('-c', type=int, default=1e5)
 parser.add_argument('-out', type=str)
-parser.add_argument('-idxout', type=str)
+parser.add_argument('--idxout', type=str)
 parser.add_argument('--start', type=int)
 
 
