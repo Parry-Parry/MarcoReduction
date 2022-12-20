@@ -42,7 +42,7 @@ def cosine_scoring(array):
     p1 = array[args.dim:2*args.dim]
     p2 = array[2*args.dim:3*args.dim]
 
-    return cosine(q, p1) - cosine(q, p2)
+    return (1 - cosine(q, p1)) - (1 - cosine(q, p2))
 
 parser = argparse.ArgumentParser()
 
