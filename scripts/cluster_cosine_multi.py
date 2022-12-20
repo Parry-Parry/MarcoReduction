@@ -1,5 +1,6 @@
 import re
 import time
+import pickle
 import pyterrier as pt
 pt.init()
 
@@ -53,6 +54,7 @@ parser.add_argument('-dim', type=int)
 parser.add_argument('-candidates', type=int)
 parser.add_argument('-out', type=str)
 
+parser.add_argument('--indexout', type=str)
 parser.add_argument('--index', type=str)
 parser.add_argument('--verbose', action='store_true')
 
@@ -112,6 +114,10 @@ def main(args):
 
         logging.info(f'{len(idx)} total candidates found')
         idx = np.random.choice(idx, args.candidates, replace=False)
+
+        if args.indexout:
+            with open(args.indexout + 'cosine.{c}.pkl', 'wb') as f:
+                pickle.dump(idx, f)
 
         logging.info('Retrieving Relevant IDs')
         new_df = triples_df.loc[idx]
