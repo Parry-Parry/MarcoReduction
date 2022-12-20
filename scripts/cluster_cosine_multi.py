@@ -116,7 +116,7 @@ def main(args):
         idx = np.random.choice(idx, args.candidates, replace=False)
 
         if args.indexout:
-            with open(args.indexout + 'cosine.{c}.pkl', 'wb') as f:
+            with open(args.indexout + f'cosine.{c}.pkl', 'wb') as f:
                 pickle.dump(idx, f)
 
         logging.info('Retrieving Relevant IDs')
