@@ -74,7 +74,7 @@ class Process:
 
         logging.info(f'Completed collection in {end} seconds')
 
-        return list(self.c), t
+        return list(self.c), step
 
 
 parser = argparse.ArgumentParser()
@@ -118,8 +118,9 @@ def main(args):
             new_df = triples_df.loc[idx]
 
             if args.idxout:
+                file = (idx, steps)
                 with open(args.idxout + f'mhcosine.{k}.{t}.{args.c}.pkl', 'wb') as f:
-                    pickle.dump(idx, f)
+                    pickle.dump(file, f)
 
             new_df.to_csv(args.out + f'mh.{k}.{t}.{args.c}.tsv', sep='\t', header=False, index=False)
 
