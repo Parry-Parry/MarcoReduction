@@ -23,7 +23,8 @@ def main(args):
     dir_build = lambda x : os.path.join(args.dir, x)
     cut = lambda x, y : x[:y, :y]
     for file in args.files:
-        with(dir_build(file), 'rb') as f:
+        path = dir_build(file)
+        with(path, 'rb') as f:
             idx = pickle.load(f)
 
         df['file'].append(file)
