@@ -28,7 +28,7 @@ def main(args):
 
         df['file'].append(file)
 
-        tmp_embeddings = embed[idx, :]
+        tmp_embeddings = embed[np.array(idx)]
         half = len(idx) // 2
         quarter = len(idx) // 4
         quarter3 = half + quarter
