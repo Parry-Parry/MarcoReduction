@@ -27,8 +27,9 @@ def main(args):
             idx = pickle.load(f)
 
         df['file'].append(file)
-
-        tmp_embeddings = embed[np.array(idx)]
+        idx = np.array(idx)
+        print(f'idx dtype: {idx.dtype} | idx shape: {idx.shape}')
+        tmp_embeddings = embed[idx]
         half = len(idx) // 2
         quarter = len(idx) // 4
         quarter3 = half + quarter
