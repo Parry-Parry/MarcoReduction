@@ -18,9 +18,7 @@ def main(args):
     with open(args.embeddings, 'rb') as f:
         embed = np.load(f)
 
-    print(f'Embedding matrix shape: {embed.shape}')
-
-    df = {'file':[], 'avg_sim':[], 'half_avg_sim':[], 'quarter_avg_sim':[]}
+    df = {'file':[], 'avg_sim':[], 'half_avg_sim':[], 'quarter_avg_sim':[], 'quarter3_avg_sim':[]}
     cut = lambda x, y : x[:y, :y]
     for file in args.files:
         with open(os.path.join(args.dir, file), 'rb') as f:
@@ -28,7 +26,6 @@ def main(args):
 
         df['file'].append(file)
         idx = np.array(idx)
-        print(f'idx dtype: {idx.dtype} | idx shape: {idx.shape}')
         tmp_embeddings = embed[idx]
         half = len(idx) // 2
         quarter = len(idx) // 4
