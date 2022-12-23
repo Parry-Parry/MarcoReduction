@@ -24,7 +24,7 @@ def main(args):
     cut = lambda x, y : x[:y, :y]
     for file in args.files:
         with open(os.path.join(args.dir, file), 'rb') as f:
-            idx = pickle.load(f)
+            idx, _ = pickle.load(f)
 
         df['file'].append(file)
         idx = np.array(idx)
