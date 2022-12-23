@@ -15,7 +15,8 @@ parser.add_argument('-files', type=str, nargs='+')
 parser.add_argument('-out', type=str)
 
 def main(args):
-    embed = np.load(args.embeddings)
+    with open(args.embeddings, 'rb') as f:
+        embed = np.load(f)
 
     df = {'file':[], 'avg_sim':[], 'half_avg_sim':[], 'quarter_avg_sim':[]}
     cut = lambda x, y : x[:y, :y]
