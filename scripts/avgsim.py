@@ -18,13 +18,9 @@ def main(args):
     embed = np.load(args.embeddings)
 
     df = {'file':[], 'avg_sim':[], 'half_avg_sim':[], 'quarter_avg_sim':[]}
-    
-
-    dir_build = lambda x : os.path.join(args.dir, x)
     cut = lambda x, y : x[:y, :y]
     for file in args.files:
-        path = dir_build(file)
-        with(path, 'rb') as f:
+        with(os.path.join(args.dir, file), 'rb') as f:
             idx = pickle.load(f)
 
         df['file'].append(file)
