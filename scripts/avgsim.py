@@ -25,11 +25,10 @@ def main(args):
     for file in args.files:
         with open(os.path.join(args.dir, file), 'rb') as f:
             idx = pickle.load(f)
-    
-        '''
+
         df['file'].append(file)
 
-        tmp_embeddings = embed[idx]
+        tmp_embeddings = embed[idx, :]
         half = len(idx) // 2
         quarter = len(idx) // 4
         quarter3 = half + quarter
@@ -42,21 +41,8 @@ def main(args):
 
     df = pd.DataFrame(df)
     df.to_csv(args.out, index=False)
-    '''
     
-
-
-
-
-
-
-
-    
-
-
-
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
-    logging.info('--Initialising Candidate Choice Using Metropolis Hastings Process--')
     main(parser.parse_args())
