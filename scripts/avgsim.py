@@ -21,6 +21,7 @@ def main(args):
     df = {'file':[], 'avg_sim':[], 'half_avg_sim':[], 'quarter_avg_sim':[], 'quarter3_avg_sim':[]}
     cut = lambda x, y : x[:y, :y]
     for file in args.files:
+        logging.info(f'Currently Computing Similarity for {file}')
         with open(os.path.join(args.dir, file), 'rb') as f:
             idx, _ = pickle.load(f)
 
