@@ -20,6 +20,7 @@ def main(args):
     df = {'file':[], 'avg_sim':[], 'half_avg_sim':[], 'quarter_avg_sim':[]}
     cut = lambda x, y : x[:y, :y]
     for file in args.files:
+        print(os.path.join(args.dir, file))
         with(os.path.join(args.dir, file), 'rb') as f:
             idx = pickle.load(f)
 
