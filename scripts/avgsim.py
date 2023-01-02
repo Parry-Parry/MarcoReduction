@@ -27,12 +27,7 @@ def main(args):
         df['file'].append(file)
         idx = np.array(idx)
         tmp = embed[idx]
-        
-        sim_sum = 0
-        for i in range(len(idx)):
-            sim_sum += np.sum(cosine_similarity(tmp[i].reshape(1, -1), tmp))
-        
-        df['avg_sim'].append(sim_sum / (len(idx) ** 2))
+        df['avg_sim'].append(np.mean(cosine_similarity(tmp)))
     df = pd.DataFrame(df)
     df.to_csv(args.out, index=False)
     
