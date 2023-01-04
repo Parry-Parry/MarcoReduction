@@ -1,3 +1,4 @@
+import pickle
 import numpy as np 
 import pandas as pd
 import argparse
@@ -20,6 +21,7 @@ class Process:
         self.k = config.k # Num samples for mean
         self.t = config.t # Threshold similarity
         self.c = None # Set of Candidates
+        self.threshold = None
 
     def _distance(self, x, mean):
         return np.mean(cosine_similarity(x.reshape(1, -1), mean))
@@ -28,11 +30,15 @@ class Process:
         c = list(self.c)
         l_c = len(c)
         if l_c > self.k:
-            return np.random.choice(c, self.k, replace=False)
+            choice = np.random.choice(c, self.k, replace=False)
+            self.threshold = choice
+            return choice
         else:
             return c 
     
     def _get_candidates(self):
+        if self.threshold is not None:
+            return self.triples[self.threshold]
         idx = self._get_indices()
 
         if len(idx) > 1:
@@ -54,7 +60,7 @@ class Process:
     
     def run(self, x0, k):
         self.state_id = x0
-        t = 0 
+        step = 0 
         self.c = set() # Set allows for the compiler to ignore candidates we have already accepted
         logging.info(f'Retrieving {k} candidates with starting id: {x0}')
         assert self.c is not None
@@ -62,23 +68,24 @@ class Process:
         start = time.time()
         while len(self.c) < k:
             self.c.add(self._step())
-            t += 1
-            if t % 1000: logging.info(f'{t} steps complete, {len(self.c)} candidates found')
+            step += 1
+            if step % 1000: logging.info(f'{step} steps complete, {len(self.c)} candidates found')
         end = time.time() - start 
 
         logging.info(f'Completed collection in {end} seconds')
 
-        return list(self.c), t
+        return list(self.c), step
 
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument('-textsource', type=str)
 parser.add_argument('-embedsource', type=str)
-parser.add_argument('-k', type=int, default=100)
-parser.add_argument('-t', type=float, default=0.0)
+parser.add_argument('-k', type=int, nargs='+')
+parser.add_argument('-t', type=float, nargs='+')
 parser.add_argument('-c', type=int, default=1e5)
 parser.add_argument('-out', type=str)
+parser.add_argument('--idxout', type=str)
 parser.add_argument('--start', type=int)
 
 
@@ -93,25 +100,31 @@ def main(args):
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
     
-    config = Config(
-        triples=array,
-        k = args.k,
-        t = args.t
-    )
+    for k in args.k:
+        for t in args.t:
+            config = Config(
+                triples=array,
+                k = k,
+                t = t
+            )
 
-    model = Process(config)
-    if args.start:
-        start_id = args.start 
-    else:
-        start_id = np.random.randint(0, len(config.triples))
+            model = Process(config)
+            if args.start:
+                start_id = args.start 
+            else:
+                start_id = np.random.randint(0, len(config.triples))
 
-    idx, t = model.run(start_id, args.c)
+            idx, steps = model.run(start_id, args.c)
+            new_df = triples_df.loc[idx]
 
-    new_df = triples_df.loc[idx]
+            if args.idxout:
+                file = (idx, steps)
+                with open(args.idxout + f'mhcosine.{k}.{t}.{args.c}.pkl', 'wb') as f:
+                    pickle.dump(file, f)
 
-    new_df.to_csv(args.out, sep='\t', header=False, index=False)
+            new_df.to_csv(args.out + f'mh.{k}.{t}.{args.c}.tsv', sep='\t', header=False, index=False)
 
-    logging.info(f'{args.c} samples found in {t} steps, Saving...')
+            logging.info(f'{args.c} samples found in {steps} steps, Saving...')
 
     return 0 
 
@@ -119,5 +132,5 @@ def main(args):
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
-    logging.info('--Initialising Candidate Choice Using Markov Process--')
+    logging.info('--Initialising Candidate Choice Using Metropolis Hastings Process--')
     main(parser.parse_args())
