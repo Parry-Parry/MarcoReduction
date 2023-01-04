@@ -109,8 +109,7 @@ def main(args):
     for k in args.k:
         for max_s in args.max_step:
             for t in args.t:
-                
-                model = Process(array, k, target_t=t, max_steps_per_sample=max_s)
+                model = Process(array, k, t, max_steps_per_sample=max_s)
                 if args.start:
                     start_id = args.start 
                 else:
