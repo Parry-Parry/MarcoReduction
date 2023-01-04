@@ -108,9 +108,9 @@ def main(args):
 
     counts = df['cluster_id'].value_counts()
 
-    scale = counts.median()
+    scale = counts.mean()
     diff = floor(scale / per_cluster)
-    print(f'Adding {diff} extra samples when over median: {scale} and max {counts.max()}')
+    logging.info(f'Adding {diff} extra samples when over mean: {scale} and max {counts.max()}')
 
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
@@ -149,8 +149,9 @@ def main(args):
     logging.info(f'Completed Triples collection in {end} seconds')
 
     if args.idxout:
-        with open(args.idxout + f'mhcosine.{k}.{t}.pkl', 'wb') as f:
-            pickle.dump(idx, f)
+        file = (idx, end)
+        with open(args.idxout + f'clusterbm25.{args.nclust}.{args.candidates}.pkl', 'wb') as f:
+            pickle.dump(file, f)
 
     new_df.to_csv(args.out, sep='\t', header=False, index=False)
     return 0
