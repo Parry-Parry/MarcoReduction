@@ -4,28 +4,24 @@ import pandas as pd
 import argparse
 import logging 
 import time 
+from typing import Any, NamedTuple
 from sklearn.metrics.pairwise import cosine_similarity
+
+class Config(NamedTuple):
+    triples : Any
+    k : int 
+    t : float 
+
 
 class Process:
     state_id = 0
-    def __init__(self, triples, k=100, target_t=0.65, min_t=None, max_steps_per_sample=10) -> None:
-        self.triples = triples
-        self.index = np.arange(len(triples)) # Index for candidates
-        self.k = k # Num samples for mean
+    def __init__(self, config : Config) -> None:
+        self.triples = config.triples
+        self.index = np.arange(len(config.triples)) # Index for candidates
+        self.k = config.k # Num samples for mean
+        self.t = config.t # Threshold similarity
         self.c = None # Set of Candidates
         self.threshold = None
-        self.t = target_t
-        self.time = [0]
-        if min_t:
-            self.max_steps = max_steps_per_sample
-            self.thresholds = [target_t, min_t]
-        else:
-            self.thresholds = None 
-            self.max_steps = None
-    
-    def _set_t(self, step):
-        if step > self.time[-1]: return None
-        self.t = np.interp(step, self.time, self.thresholds)
 
     def _distance(self, x, mean):
         return np.mean(cosine_similarity(x.reshape(1, -1), mean))
@@ -64,7 +60,6 @@ class Process:
     
     def run(self, x0, k):
         self.state_id = x0
-        self.time.append(k * self.max_steps)
         step = 0 
         self.c = set() # Set allows for the compiler to ignore candidates we have already accepted
         logging.info(f'Retrieving {k} candidates with starting id: {x0}')
@@ -74,7 +69,6 @@ class Process:
         while len(self.c) < k:
             self.c.add(self._step())
             step += 1
-            self._set_t(step)
             if step % 1000: logging.info(f'{step} steps complete, {len(self.c)} candidates found')
         end = time.time() - start 
 
@@ -91,9 +85,7 @@ parser.add_argument('-k', type=int, nargs='+')
 parser.add_argument('-t', type=float, nargs='+')
 parser.add_argument('-c', type=int, default=1e5)
 parser.add_argument('-out', type=str)
-parser.add_argument('--min_t', type=float, nargs='*')
 parser.add_argument('--idxout', type=str)
-parser.add_argument('--max_step', type=int)
 parser.add_argument('--start', type=int)
 
 
@@ -110,12 +102,17 @@ def main(args):
     
     for k in args.k:
         for t in args.t:
+            config = Config(
+                triples=array,
+                k = k,
+                t = t
+            )
 
-            model = Process(array, k, target_t=t, min_t=min_t)
+            model = Process(config)
             if args.start:
                 start_id = args.start 
             else:
-                start_id = np.random.randint(0, len(array))
+                start_id = np.random.randint(0, len(config.triples))
 
             idx, steps = model.run(start_id, args.c)
             new_df = triples_df.loc[idx]
