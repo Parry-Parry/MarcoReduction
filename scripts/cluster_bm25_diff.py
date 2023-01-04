@@ -142,18 +142,14 @@ def main(args):
     logging.info(f'{len(idx)} total candidates found')
     idx = np.random.choice(idx, args.candidates, replace=False)
 
-    logging.info('Retrieving Relevant IDs')
-    new_df = triples_df.loc[idx]
-
     end = time.time()-start 
     logging.info(f'Completed Triples collection in {end} seconds')
 
-    if args.idxout:
-        file = (idx, end)
-        with open(args.idxout + f'clusterbm25.{args.nclust}.{args.candidates}.pkl', 'wb') as f:
-            pickle.dump(file, f)
+    
+    file = (idx, end)
+    with open(args.out + f'clusterbm25.{args.nclust}.{args.candidates}.pkl', 'wb') as f:
+        pickle.dump(file, f)
 
-    new_df.to_csv(args.out, sep='\t', header=False, index=False)
     return 0
 
 if __name__ == '__main__':
