@@ -87,7 +87,7 @@ class Process:
 
         logging.info(f'Completed collection in {end} seconds')
 
-        return list(self.c), step
+        return list(self.c), step, end
 
 
 parser = argparse.ArgumentParser()
@@ -109,19 +109,18 @@ def main(args):
     for k in args.k:
         for max_s in args.max_step:
             for t in args.t:
-        
+                
                 model = Process(array, k, target_t=t, max_steps_per_sample=max_s)
                 if args.start:
                     start_id = args.start 
                 else:
                     start_id = np.random.randint(0, len(array))
 
-                idx, steps = model.run(start_id, args.c)
+                idx, steps, end = model.run(start_id, args.c)
 
-                if args.idxout:
-                    file = (idx, steps)
-                    with open(args.idxout + f'mhcosine.{k}.{t}.{max_s}.{args.c}.pkl', 'wb') as f:
-                        pickle.dump(file, f)
+                file = (idx, steps, end)
+                with open(args.out + f'mhcosine.{k}.{t}.{max_s}.{args.c}.pkl', 'wb') as f:
+                    pickle.dump(file, f)
 
                 logging.info(f'{args.c} samples found in {steps} steps, Saving...')
 
