@@ -72,7 +72,6 @@ class Process:
     
     def run(self, x0, k):
         self.state_id = x0
-        self.time.append(k * self.max_steps)
         step = 0 
         self.c = set() # Set allows for the compiler to ignore candidates we have already accepted
         logging.info(f'Retrieving {k} candidates with starting id: {x0}')
@@ -113,13 +112,18 @@ def main(args):
                 if args.start:
                     start_id = args.start 
                 else:
-                    start_id = np.random.randint(0, len(array))
+                    start_id = np.random.10 lines
+2023-01-04 13:11:47,047 - --Initialising Candidate Choice Using Metropolis Hastings Process--
+2023-01-04 13:11:47,047 - Reading Embeddings...
+Traceback (most recent call last):
+  File "/nfs/primary/MarcoReduction/scripts/metropolishastings/run_process_time.py", line 133, in <module>
+    main(parser.parse_args())
+  File "/nfs/primary/MarcoReduction/scripts/metropolishastings/run_process_time.py", line 118, in main
+    idx, steps, end = model.run(start_id, args.c)
+  File "/nfs/primary/MarcoReduction/scripts/metropolishastings/run_process_time.py", line 75, in run
+    self.time.append(k * self.max_steps)
+AttributeError: 'Process' object has no attribute 'time'
 
-                idx, steps, end = model.run(start_id, args.c)
-
-                file = (idx, steps, end)
-                with open(args.out + f'mhcosine.{k}.{t}.{max_s}.{args.c}.pkl', 'wb') as f:
-                    pickle.dump(file, f)
 
                 logging.info(f'{args.c} samples found in {steps} steps, Saving...')
 
