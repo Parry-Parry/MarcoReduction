@@ -91,7 +91,7 @@ def truncate(array, sig):
     pos = array[:, DIM:2*DIM]
     neg = array[:, 2*DIM:3*DIM]
 
-    return np.stack([q[:, :sig], pos[:, :sig], neg[:, :sig]], axis=1)
+    return np.stack([q[:, :sig], pos[:, :sig], neg[:, :sig]], axis=1).reshape((array.shape[0], -1))
 
 def process_array(array, ablation='query', trunc=None) -> np.array:
     if ablation == 'query':
