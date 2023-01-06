@@ -113,21 +113,20 @@ def main(args):
     data = process_array(array, args.ablation)
     
     for k in args.k:
-        for max_s in args.max_step:
-            for t in args.t:
-                model = Process(data, k, t)
-                if args.start:
-                    start_id = args.start 
-                else:
-                    start_id = np.random.randint(0, len(array))
+        for t in args.t:
+            model = Process(data, k, t)
+            if args.start:
+                start_id = args.start 
+            else:
+                start_id = np.random.randint(0, len(array))
 
-                idx, steps, end = model.run(start_id, args.c)
+            idx, steps, end = model.run(start_id, args.c)
 
-                file = (idx, steps, end)
-                with open(args.out + f'mhcosine.{args.ablation}.{k}.{t}.{args.c}.pkl', 'wb') as f:
-                    pickle.dump(file, f)
+            file = (idx, steps, end)
+            with open(args.out + f'mhcosine.{args.ablation}.{k}.{t}.{args.c}.pkl', 'wb') as f:
+                pickle.dump(file, f)
 
-                logging.info(f'{args.c} samples found in {steps} steps, Saving...')
+            logging.info(f'{args.c} samples found in {steps} steps, Saving...')
 
     return 0 
 
