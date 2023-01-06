@@ -115,7 +115,7 @@ def main(args):
     for k in args.k:
         for max_s in args.max_step:
             for t in args.t:
-                model = Process(data, k, t, max_steps_per_sample=max_s)
+                model = Process(data, k, t)
                 if args.start:
                     start_id = args.start 
                 else:
