@@ -110,7 +110,7 @@ def main(args):
     with open(args.source, 'rb') as f:
         array = np.load(f)
 
-    data = process_array(array, args.ablation)
+    data = process_array(array, args.ablation, args.truncate)
     
     for k in args.k:
         for t in args.t:
