@@ -81,12 +81,12 @@ def main(args):
     with open(args.embedsource, 'rb') as f:
         array = np.load(f)
 
-    per_cluster = args.candidates // args.nclust
+    alpha = args.candidates // args.nclust
 
     start = time.time()
 
     logging.info('Clustering Embeddings')
-    clustering = ClusterEngine(args.niter, args.nclust, per_cluster)
+    clustering = ClusterEngine(args.niter, args.nclust, alpha)
     clustering.train(array)
     c_idx = clustering.query(array)
     index = np.arange(len(array)).tolist()
@@ -95,8 +95,8 @@ def main(args):
     df['relative_index'] = index
 
     counts = df['cluster_id'].value_counts()
-    smoothed_counts = counts.apply(lambda x : (x + 1) / (len(array) + args.nclust))
-    samples = smoothed_counts.apply(lambda x : floor(x * len(array)))
+    smoothed_counts = counts.apply(lambda x : (x + alpha) / (len(array) + args.nclust))
+    samples = smoothed_counts.apply(lambda x : floor(x * args.candidates))
 
     logging.info('Cleaning Text...')
     df['query'] = df['query'].apply(clean_text)
