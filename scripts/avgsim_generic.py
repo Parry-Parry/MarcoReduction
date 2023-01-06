@@ -11,15 +11,16 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('-embeddings', type=str)
 parser.add_argument('-dir', type=str)
-parser.add_argument('-files', type=str, nargs='+')
 parser.add_argument('-out', type=str)
 
 def main(args):
     with open(args.embeddings, 'rb') as f:
         embed = np.load(f)
 
+    files = [f for f in os.listdir(args.dir) if os.path.isfile(os.path.join(args.dir, f))]
+
     df = {'file':[], 'time(s)':[], 'steps':[],'avg_sim':[]}
-    for file in args.files:
+    for file in files:
         logging.info(f'Currently Computing Similarity for {file}')
         with open(os.path.join(args.dir, file), 'rb') as f:
             idx, steps, end = pickle.load(f)
