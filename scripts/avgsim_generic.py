@@ -12,12 +12,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-embeddings', type=str)
 parser.add_argument('-dir', type=str)
 parser.add_argument('-out', type=str)
+parser.add_argument('--files', type=str, nargs='*')
 
 def main(args):
     with open(args.embeddings, 'rb') as f:
         embed = np.load(f)
-
-    files = [f for f in os.listdir(args.dir) if os.path.isfile(os.path.join(args.dir, f))]
+    if not args.files:
+        files = [f for f in os.listdir(args.dir) if os.path.isfile(os.path.join(args.dir, f))]
+    else:
+        files = args.files
 
     df = {'file':[], 'time(s)':[], 'steps':[],'avg_sim':[]}
     for file in files:
