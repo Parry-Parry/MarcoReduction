@@ -35,7 +35,7 @@ def main(args):
             idx, _, _ = pickle.load(f)
 
         tmp = df.loc[idx]
-        tsv_name = f"{strip_name}.pkl"
+        tsv_name = f"{strip_name}.tsv"
         tmp.to_csv(os.path.join(args.sink, tsv_name), sep='\t', header=False, index=False)
         del tmp 
 
